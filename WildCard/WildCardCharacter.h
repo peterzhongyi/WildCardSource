@@ -38,10 +38,24 @@ public:
 	// Record Controller Angle between turns.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller")
     FRotator ControllerAngle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Stats")
+    float Stamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Stats")
+	float MaxStamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Stats")
+	float StaminaPerUnitDistance;
+
+	UPROPERTY()
+	FVector PreviousLocation;
 	
 protected:	
 	// To add mapping context
 	virtual void BeginPlay();
+
+	virtual void Tick(float DeltaTime) override;
 
 public:
 	/** Returns CameraBoom subobject **/

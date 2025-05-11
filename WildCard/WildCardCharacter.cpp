@@ -47,6 +47,11 @@ AWildCardCharacter::AWildCardCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Set up initial character stats
+	MaxStamina = 100.0f;
+    Stamina = MaxStamina;
+    StaminaPerUnitDistance = 0.03f; // Adjust this to change stamina consumption rate
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -56,10 +61,41 @@ void AWildCardCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	
+    PreviousLocation = GetActorLocation();
+}
+
+void AWildCardCharacter::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    
+    // Get current location
+    FVector CurrentLocation = GetActorLocation();
+    
+    // Calculate distance moved since last tick (in Unreal units)
+    float DistanceMoved = FVector::Dist2D(CurrentLocation, PreviousLocation);
+    
+    // Only consume stamina if we've moved a meaningful distance
+    if (DistanceMoved > 1.0f)
+    {
+        // Decrease stamina based on distance moved
+        float StaminaDecrease = DistanceMoved * StaminaPerUnitDistance;
+        Stamina = FMath::Max(0.0f, Stamina - StaminaDecrease);
+        
+        // Optional: Log stamina for debugging
+        UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Stamina: %f"), DistanceMoved, Stamina);
+        
+        // Update previous location
+        PreviousLocation = CurrentLocation;
+    }
 }
 
 void AWildCardCharacter::Move(const FInputActionValue& Value)
 {
+	if (Stamina <= 0.f) {
+		UE_LOG(LogTemp, Warning, TEXT("Can't move, no Stamina: %f"), Stamina);
+		return;
+	}
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 

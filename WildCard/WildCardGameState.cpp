@@ -58,7 +58,9 @@ void AWildCardGameState::SwitchTurnEventFunction()
     if (CurrentCharacter)
     {
         CurrentCharacter->ControllerAngle = WildCardPlayerController->GetControlRotation();
-    }
+    } 
+    // Reset CurrentCharacter's Stamina
+    CurrentCharacter->Stamina = CurrentCharacter->MaxStamina;
 
     int NextPlayerIndex = (CurrentPlayerIndex + 1) % PlayerCharacters.Num();
     UE_LOG(LogTemp, Warning, TEXT("NextPlayerIndex is %d"), NextPlayerIndex);
