@@ -2,6 +2,7 @@
 
 #include "WildCardGameState.h"
 #include "WildCardPlayerController.h"
+#include "WildCardHUD.h"
 #include "Kismet\GameplayStatics.h"
 
 AWildCardGameState::AWildCardGameState()
@@ -67,6 +68,9 @@ void AWildCardGameState::SwitchTurnEventFunction()
     AActor* NextPlayer = PlayerCharacters[NextPlayerIndex];
     AWildCardCharacter *NextCharacter = Cast<AWildCardCharacter>(NextPlayer);
     WildCardPlayerController->Possess(Cast<AWildCardCharacter>(NextPlayer));
+    AWildCardHUD* HUD = Cast<AWildCardHUD>(WildCardPlayerController->MyHUD);
+    HUD->CurrentCharacter = NextCharacter;
+
     // If NextCharacter's Controller Angle is never set, it will default to the initial controller angle
     // set by UE logic somewhere.
     WildCardPlayerController->SetControlRotation(NextCharacter->ControllerAngle);

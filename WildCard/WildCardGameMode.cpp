@@ -3,6 +3,7 @@
 #include "WildCardGameMode.h"
 #include "WildCardCharacter.h"
 #include "WildCardGameState.h"
+#include "WildCardHUD.h"
 #include "UObject/ConstructorHelpers.h"
 
 AWildCardGameMode::AWildCardGameMode()
@@ -16,4 +17,5 @@ AWildCardGameMode::AWildCardGameMode()
 
 	PlayerControllerClass = AWildCardPlayerController::StaticClass();
 	GameStateClass = AWildCardGameState::StaticClass();
+	HUDClass = AWildCardHUD::StaticClass();
 }

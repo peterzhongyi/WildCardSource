@@ -51,6 +51,7 @@ void AWildCardPlayerController::BeginPlay()
     {
         Subsystem->AddMappingContext(DefaultMappingContext, 0);
     }
+    
 }
 
 void AWildCardPlayerController::SetupInputComponent()
@@ -98,7 +99,7 @@ void AWildCardPlayerController::OnPossess(APawn* InPawn)
 // And add these handler methods:
 void AWildCardPlayerController::HandleJump()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Tried to Jump"));
+    // UE_LOG(LogTemp, Warning, TEXT("Tried to Jump"));
     if (WildCardCharacter)
     {
         WildCardCharacter->Jump();
@@ -115,7 +116,7 @@ void AWildCardPlayerController::HandleStopJumping()
 
 void AWildCardPlayerController::HandleMove(const FInputActionValue& Value)
 {
-    UE_LOG(LogTemp, Warning, TEXT("Tried to Move"));
+    // UE_LOG(LogTemp, Warning, TEXT("Tried to Move"));
     if (WildCardCharacter)
     {
         WildCardCharacter->Move(Value);

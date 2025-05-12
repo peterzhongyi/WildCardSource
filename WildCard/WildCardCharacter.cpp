@@ -83,7 +83,7 @@ void AWildCardCharacter::Tick(float DeltaTime)
         Stamina = FMath::Max(0.0f, Stamina - StaminaDecrease);
         
         // Optional: Log stamina for debugging
-        UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Stamina: %f"), DistanceMoved, Stamina);
+        // UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Stamina: %f"), DistanceMoved, Stamina);
         
         // Update previous location
         PreviousLocation = CurrentLocation;
