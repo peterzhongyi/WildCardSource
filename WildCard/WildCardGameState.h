@@ -17,7 +17,7 @@ class WILDCARD_API AWildCardGameState : public AGameStateBase
 	
 public:
 	AWildCardGameState();
-	void SwitchTurnEventFunction();
+	AWildCardCharacter* SwitchTurnEventFunction();
 
 	AWildCardPlayerController* WildCardPlayerController;
 	TSubclassOf<ACharacter> PlayerCharacterClass;

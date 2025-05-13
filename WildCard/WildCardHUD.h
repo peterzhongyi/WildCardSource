@@ -26,4 +26,10 @@ public:
 
 	// Reference to the current controlled character
     AWildCardCharacter* CurrentCharacter;
+
+	void ChangeCharacter(AWildCardCharacter* NextCharacter);
+
+protected:
+	UFUNCTION()
+	void OnStaminaChangedHandler(float NewStamina);
 };

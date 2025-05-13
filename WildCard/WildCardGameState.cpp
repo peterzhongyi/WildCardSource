@@ -51,29 +51,35 @@ void AWildCardGameState::BeginPlay()
     }
 }
 
-void AWildCardGameState::SwitchTurnEventFunction()
+AWildCardCharacter *AWildCardGameState::SwitchTurnEventFunction()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Notified on Switch Turn. CurrentPlayer is %d"), CurrentPlayerIndex);   
+    AWildCardCharacter *NextCharacter = nullptr;
+    UE_LOG(LogTemp, Warning, TEXT("Notified on Switch Turn. CurrentPlayer is %d"), CurrentPlayerIndex);
     // Record the controller angle of the current player.
     AWildCardCharacter *CurrentCharacter = Cast<AWildCardCharacter>(PlayerCharacters[CurrentPlayerIndex]);
     if (CurrentCharacter)
     {
         CurrentCharacter->ControllerAngle = WildCardPlayerController->GetControlRotation();
-    } 
+    }
     // Reset CurrentCharacter's Stamina
     CurrentCharacter->Stamina = CurrentCharacter->MaxStamina;
 
     int NextPlayerIndex = (CurrentPlayerIndex + 1) % PlayerCharacters.Num();
     UE_LOG(LogTemp, Warning, TEXT("NextPlayerIndex is %d"), NextPlayerIndex);
-    AActor* NextPlayer = PlayerCharacters[NextPlayerIndex];
-    AWildCardCharacter *NextCharacter = Cast<AWildCardCharacter>(NextPlayer);
-    WildCardPlayerController->Possess(Cast<AWildCardCharacter>(NextPlayer));
-    AWildCardHUD* HUD = Cast<AWildCardHUD>(WildCardPlayerController->MyHUD);
-    HUD->CurrentCharacter = NextCharacter;
-
-    // If NextCharacter's Controller Angle is never set, it will default to the initial controller angle
-    // set by UE logic somewhere.
-    WildCardPlayerController->SetControlRotation(NextCharacter->ControllerAngle);
+    AActor *NextPlayer = PlayerCharacters[NextPlayerIndex];
+    if (NextPlayer)
+    {
+        NextCharacter = Cast<AWildCardCharacter>(NextPlayer);
+        if (!NextCharacter)
+        {
+            UE_LOG(LogTemp, Error, TEXT("NextCharacter is nullptr"));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("NextPlayer is nullptr"));
+    }
 
     CurrentPlayerIndex = NextPlayerIndex;
+    return NextCharacter;
 }

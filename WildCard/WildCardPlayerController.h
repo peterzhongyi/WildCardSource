@@ -7,7 +7,7 @@
 #include "WildCardCharacter.h"
 #include "WildCardPlayerController.generated.h"
 
-DECLARE_DELEGATE(FOnSwitchTurnDelegate);
+DECLARE_DELEGATE_RetVal(AWildCardCharacter*, FOnSwitchTurnDelegate);
 
 UCLASS()
 class WILDCARD_API AWildCardPlayerController : public APlayerController

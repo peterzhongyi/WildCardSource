@@ -80,7 +80,8 @@ void AWildCardCharacter::Tick(float DeltaTime)
     {
         // Decrease stamina based on distance moved
         float StaminaDecrease = DistanceMoved * StaminaPerUnitDistance;
-        Stamina = FMath::Max(0.0f, Stamina - StaminaDecrease);
+		float NewStamina = FMath::Max(0.0f, Stamina - StaminaDecrease);
+        UpdateStamina(NewStamina);
         
         // Optional: Log stamina for debugging
         // UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Stamina: %f"), DistanceMoved, Stamina);
@@ -88,6 +89,12 @@ void AWildCardCharacter::Tick(float DeltaTime)
         // Update previous location
         PreviousLocation = CurrentLocation;
     }
+}
+
+void AWildCardCharacter::UpdateStamina(float NewStamina)
+{
+	Stamina = NewStamina;
+	OnStaminaChanged.Broadcast(NewStamina);
 }
 
 void AWildCardCharacter::Move(const FInputActionValue& Value)

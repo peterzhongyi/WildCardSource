@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "WildCardCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChangedDelegate, float, NewStamina);
 
 UCLASS(config=Game)
 class AWildCardCharacter : public ACharacter
@@ -50,12 +51,16 @@ public:
 
 	UPROPERTY()
 	FVector PreviousLocation;
+
+	FOnStaminaChangedDelegate OnStaminaChanged;
 	
 protected:	
 	// To add mapping context
 	virtual void BeginPlay();
 
 	virtual void Tick(float DeltaTime) override;
+
+	void UpdateStamina(float NewStamina);
 
 public:
 	/** Returns CameraBoom subobject **/

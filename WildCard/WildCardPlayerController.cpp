@@ -6,6 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
+#include "WildCardHUD.h"
 
 AWildCardPlayerController::AWildCardPlayerController()
 {
@@ -134,5 +135,26 @@ void AWildCardPlayerController::HandleLook(const FInputActionValue& Value)
 void AWildCardPlayerController::HandleSwitchTurn()
 {
     UE_LOG(LogTemp, Warning, TEXT("Switching Turn"));
-    OnSwitchTurn.ExecuteIfBound();
+    if (OnSwitchTurn.IsBound())
+    {
+        AWildCardCharacter* NextCharacter = OnSwitchTurn.Execute();
+        if (NextCharacter)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Next character is: %s"), *NextCharacter->GetName());
+            Possess(NextCharacter);
+            AWildCardHUD* HUD = Cast<AWildCardHUD>(MyHUD);
+            if (HUD)
+            {
+                HUD->ChangeCharacter(NextCharacter);
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("Controller HUD is nullptr"));
+            }
+            
+            // If NextCharacter's Controller Angle is never set, it will default to the initial controller angle
+            // set by UE logic somewhere.
+            SetControlRotation(NextCharacter->ControllerAngle);
+        }
+    }
 }
