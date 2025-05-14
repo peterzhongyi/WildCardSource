@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "WildCardCharacter.h"
+#include "Blueprint/UserWidget.h" 
 #include "WildCardHUD.generated.h"
 
 /**
@@ -32,4 +33,12 @@ public:
 protected:
 	UFUNCTION()
 	void OnStaminaChangedHandler(float NewStamina);
+
+    // Widget class reference
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> OverlayWidgetClass;
+
+	// Widget instance
+	UPROPERTY()
+	UUserWidget* OverlayWidget;
 };

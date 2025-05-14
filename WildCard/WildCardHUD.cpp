@@ -10,6 +10,12 @@
 AWildCardHUD::AWildCardHUD()
 {
     // Constructor - initialize anything needed here
+    static ConstructorHelpers::FClassFinder<UUserWidget> OverlayWidgetObj(TEXT("/Game/ThirdPerson/Blueprints/WBP_Overlay"));
+    if (OverlayWidgetObj.Class != nullptr)
+    {
+        OverlayWidgetClass = OverlayWidgetObj.Class;
+        UE_LOG(LogTemp, Warning, TEXT("OverlayWidgetClass set to %s"), *OverlayWidgetClass->GetName());
+    }
 }
 
 void AWildCardHUD::BeginPlay()
@@ -33,6 +39,26 @@ void AWildCardHUD::BeginPlay()
         }
         
     }
+    
+    // Create the overlay widget
+    if (OverlayWidgetClass)
+    {
+        OverlayWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), OverlayWidgetClass);
+        if (OverlayWidget)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Successfully created overlay widget"));
+
+            OverlayWidget->AddToViewport();
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("Failed to create overlay widget"));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("OverlayWidgetClass is not set. Did you create the WBP_Overlay Blueprint?"));
+    }
 }
 
 void AWildCardHUD::Tick(float DeltaSeconds)
@@ -50,6 +76,8 @@ void AWildCardHUD::Tick(float DeltaSeconds)
 void AWildCardHUD::OnStaminaChangedHandler(float NewStamina)
 {
     UE_LOG(LogTemp, Warning, TEXT("HUD received Stamina Change Update %f"), NewStamina);
+
+
 }
 
 void AWildCardHUD::ChangeCharacter(AWildCardCharacter* NextCharacter)
