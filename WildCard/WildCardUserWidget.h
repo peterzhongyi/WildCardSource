@@ -13,4 +13,13 @@ UCLASS()
 class WILDCARD_API UWildCardUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
+    // Declare the functions you want to call from C++
+    // These must match the function names in your Blueprint
+    UFUNCTION(BlueprintImplementableEvent)
+    void UpdateStamina(float NewStamina);
+
+	UFUNCTION(BlueprintImplementableEvent)
+    void UpdateMaxStamina(float MaxStamina);
 };

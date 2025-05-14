@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "WildCardCharacter.h"
-#include "Blueprint/UserWidget.h" 
+#include "WildCardUserWidget.h" 
 #include "WildCardHUD.generated.h"
 
 /**
@@ -36,9 +36,9 @@ protected:
 
     // Widget class reference
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UUserWidget> OverlayWidgetClass;
+	TSubclassOf<UWildCardUserWidget> OverlayWidgetClass;
 
 	// Widget instance
 	UPROPERTY()
-	UUserWidget* OverlayWidget;
+	UWildCardUserWidget* OverlayWidget;
 };

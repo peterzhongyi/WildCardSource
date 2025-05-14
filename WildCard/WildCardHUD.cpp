@@ -10,7 +10,7 @@
 AWildCardHUD::AWildCardHUD()
 {
     // Constructor - initialize anything needed here
-    static ConstructorHelpers::FClassFinder<UUserWidget> OverlayWidgetObj(TEXT("/Game/ThirdPerson/Blueprints/WBP_Overlay"));
+    static ConstructorHelpers::FClassFinder<UWildCardUserWidget> OverlayWidgetObj(TEXT("/Game/ThirdPerson/Blueprints/WBP_Overlay"));
     if (OverlayWidgetObj.Class != nullptr)
     {
         OverlayWidgetClass = OverlayWidgetObj.Class;
@@ -43,11 +43,14 @@ void AWildCardHUD::BeginPlay()
     // Create the overlay widget
     if (OverlayWidgetClass)
     {
-        OverlayWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), OverlayWidgetClass);
+        OverlayWidget = CreateWidget<UWildCardUserWidget>(GetOwningPlayerController(), OverlayWidgetClass);
         if (OverlayWidget)
         {
             UE_LOG(LogTemp, Warning, TEXT("Successfully created overlay widget"));
 
+            // Set up HUD for CurrentCharacter
+            OverlayWidget->UpdateMaxStamina(CurrentCharacter->MaxStamina);
+            OverlayWidget->UpdateStamina(CurrentCharacter->Stamina);
             OverlayWidget->AddToViewport();
         }
         else
@@ -64,20 +67,14 @@ void AWildCardHUD::BeginPlay()
 void AWildCardHUD::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-    
-    // Update the reference to the current character
-    // if (CurrentCharacter)
-    // {
-    //     UE_LOG(LogTemp, Warning, TEXT("HUD current character set to %s"), *CurrentCharacter->GetName());
-    // }
-
 }
 
 void AWildCardHUD::OnStaminaChangedHandler(float NewStamina)
 {
     UE_LOG(LogTemp, Warning, TEXT("HUD received Stamina Change Update %f"), NewStamina);
-
-
+    if (OverlayWidget) {
+        OverlayWidget->UpdateStamina(NewStamina);
+    }
 }
 
 void AWildCardHUD::ChangeCharacter(AWildCardCharacter* NextCharacter)
@@ -94,5 +91,7 @@ void AWildCardHUD::ChangeCharacter(AWildCardCharacter* NextCharacter)
     }
     CurrentCharacter->OnStaminaChanged.RemoveDynamic(this, &AWildCardHUD::OnStaminaChangedHandler);
     NextCharacter->OnStaminaChanged.AddDynamic(this, &AWildCardHUD::OnStaminaChangedHandler);
+    OverlayWidget->UpdateMaxStamina(NextCharacter->MaxStamina);
+    OverlayWidget->UpdateStamina(NextCharacter->Stamina);
     CurrentCharacter = NextCharacter;
 }
