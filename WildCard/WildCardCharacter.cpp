@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Components/SceneComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -18,6 +19,8 @@ AWildCardCharacter::AWildCardCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+	RootComponent = GetCapsuleComponent();
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -54,15 +57,25 @@ AWildCardCharacter::AWildCardCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	static ConstructorHelpers::FClassFinder<AProjectile> ProjectileObj(TEXT("/Game/ThirdPerson/Blueprints/BP_Projectile"));
+    if (ProjectileObj.Class != nullptr)
+    {
+        ProjectileClass = ProjectileObj.Class;
+        UE_LOG(LogTemp, Warning, TEXT("ProjectileClass set to %s"), *ProjectileClass->GetName());
+    }
+
+	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSpawnPoint"));
+	ProjectileSpawnPoint->SetupAttachment(RootComponent);
 }
 
 void AWildCardCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
-	
     PreviousLocation = GetActorLocation();
+	
+	FireBall();
 }
 
 void AWildCardCharacter::Tick(float DeltaTime)
@@ -135,6 +148,14 @@ void AWildCardCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AWildCardCharacter::FireBall()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Calling FireBall"));
+	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
+	FRotator Rotation = ProjectileSpawnPoint->GetComponentRotation();
+	GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, Rotation);
 }
 
 

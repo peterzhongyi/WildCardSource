@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Projectile.h"
 #include "WildCardCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChangedDelegate, float, NewStamina);
@@ -21,6 +22,9 @@ class AWildCardCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* ProjectileSpawnPoint;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -53,6 +57,8 @@ public:
 	FVector PreviousLocation;
 
 	FOnStaminaChangedDelegate OnStaminaChanged;
+
+	void FireBall();
 	
 protected:	
 	// To add mapping context
@@ -61,6 +67,8 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 	void UpdateStamina(float NewStamina);
+
+	TSubclassOf<AProjectile> ProjectileClass;
 
 public:
 	/** Returns CameraBoom subobject **/
