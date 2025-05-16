@@ -85,8 +85,6 @@ void AWildCardPlayerController::OnPossess(APawn* InPawn)
     
     // Store the character pointer when we possess it
     WildCardCharacter = Cast<AWildCardCharacter>(InPawn);
-    
-    // Debug message to ensure the character was found and casted correctly
     if (WildCardCharacter)
     {
         UE_LOG(LogTemp, Warning, TEXT("Successfully possessed a WildCardCharacter"));
@@ -137,13 +135,11 @@ void AWildCardPlayerController::HandleSwitchTurn()
     UE_LOG(LogTemp, Warning, TEXT("Switching Turn"));
     if (OnSwitchTurn.IsBound())
     {
-        AWildCardCharacter* NextCharacter = OnSwitchTurn.Execute();
-        if (NextCharacter)
+        if (AWildCardCharacter* NextCharacter = OnSwitchTurn.Execute())
         {
             UE_LOG(LogTemp, Warning, TEXT("Next character is: %s"), *NextCharacter->GetName());
             Possess(NextCharacter); // This will also change the WildCardCharacter variable
-            AWildCardHUD* HUD = Cast<AWildCardHUD>(MyHUD);
-            if (HUD)
+            if (AWildCardHUD* HUD = Cast<AWildCardHUD>(MyHUD))
             {
                 HUD->ChangeCharacter(NextCharacter);
             }

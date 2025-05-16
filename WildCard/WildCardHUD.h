@@ -44,4 +44,9 @@ protected:
 	// Widget instance
 	UPROPERTY()
 	UWildCardUserWidget* OverlayWidget;
+
+	void BindWidgetCallbacks(AWildCardCharacter* character);
+	void UnBindWidgetCallbacks(AWildCardCharacter* character);
+	void RefreshOverlay();
+	
 };

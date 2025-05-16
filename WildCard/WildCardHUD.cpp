@@ -7,6 +7,32 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
+void AWildCardHUD::BindWidgetCallbacks(AWildCardCharacter* character)
+{
+    character->OnStaminaChanged.AddDynamic(this, &AWildCardHUD::OnStaminaChangedHandler);
+    character->OnHealthChanged.AddDynamic(this, &AWildCardHUD::OnHealthChangedHandler);
+}
+
+void AWildCardHUD::UnBindWidgetCallbacks(AWildCardCharacter* character)
+{
+    character->OnStaminaChanged.RemoveDynamic(this, &AWildCardHUD::OnStaminaChangedHandler);
+    character->OnHealthChanged.RemoveDynamic(this, &AWildCardHUD::OnHealthChangedHandler);
+}
+
+void AWildCardHUD::RefreshOverlay()
+{
+    // Order is important! Otherwise, dividing by 0
+    if (OverlayWidget == nullptr || CurrentCharacter == nullptr)
+    {
+        UE_LOG(LogTemp, Error, TEXT("RefreshOverlay - either OverlayWidge or CurrentCharacter is nullptr"));
+        return;
+    }
+    OverlayWidget->UpdateMaxStamina(CurrentCharacter->MaxStamina); 
+    OverlayWidget->UpdateStamina(CurrentCharacter->Stamina);
+    OverlayWidget->UpdateMaxHealth(CurrentCharacter->MaxHealth);
+    OverlayWidget->UpdateHealth(CurrentCharacter->Health);
+}
+
 AWildCardHUD::AWildCardHUD()
 {
     // Constructor - initialize anything needed here
@@ -24,15 +50,13 @@ void AWildCardHUD::BeginPlay()
     
     // Log that the HUD has been initialized
     UE_LOG(LogTemp, Warning, TEXT("WildCardHUD Begin Play"));
-    APlayerController* PC = GetOwningPlayerController();
-    if (PC)
+    if (APlayerController* PC = GetOwningPlayerController())
     {
         CurrentCharacter = Cast<AWildCardCharacter>(PC->GetPawn());
         if (CurrentCharacter)
         {
             UE_LOG(LogTemp, Warning, TEXT("HUD current character set to %s"), *CurrentCharacter->GetName());
-            CurrentCharacter->OnStaminaChanged.AddDynamic(this, &AWildCardHUD::OnStaminaChangedHandler);
-            CurrentCharacter->OnHealthChanged.AddDynamic(this, &AWildCardHUD::OnHealthChangedHandler);
+            BindWidgetCallbacks(CurrentCharacter);
         }
         else
         {
@@ -50,11 +74,7 @@ void AWildCardHUD::BeginPlay()
             UE_LOG(LogTemp, Warning, TEXT("Successfully created overlay widget"));
 
             // Set up HUD for CurrentCharacter
-            // Order is important! Otherwise dividing by 0
-            OverlayWidget->UpdateMaxStamina(CurrentCharacter->MaxStamina); 
-            OverlayWidget->UpdateStamina(CurrentCharacter->Stamina);
-            OverlayWidget->UpdateMaxHealth(CurrentCharacter->MaxHealth);
-            OverlayWidget->UpdateHealth(CurrentCharacter->Health);
+            RefreshOverlay();
             OverlayWidget->AddToViewport();
         }
         else
@@ -101,14 +121,10 @@ void AWildCardHUD::ChangeCharacter(AWildCardCharacter* NextCharacter)
         UE_LOG(LogTemp, Error, TEXT("HUD ChangeCharacter - NextCharacter is null"));
         return;
     }
-    CurrentCharacter->OnStaminaChanged.RemoveDynamic(this, &AWildCardHUD::OnStaminaChangedHandler);
-    CurrentCharacter->OnHealthChanged.RemoveDynamic(this, &AWildCardHUD::OnHealthChangedHandler);
-    NextCharacter->OnStaminaChanged.AddDynamic(this, &AWildCardHUD::OnStaminaChangedHandler);
-    NextCharacter->OnHealthChanged.AddDynamic(this, &AWildCardHUD::OnHealthChangedHandler);
-    OverlayWidget->UpdateMaxStamina(NextCharacter->MaxStamina);
-    OverlayWidget->UpdateStamina(NextCharacter->Stamina);
-    OverlayWidget->UpdateMaxHealth(NextCharacter->MaxHealth);
-    OverlayWidget->UpdateHealth(NextCharacter->Health);
+    
+    UnBindWidgetCallbacks(CurrentCharacter);
+    BindWidgetCallbacks(NextCharacter);
     
     CurrentCharacter = NextCharacter;
+    RefreshOverlay();
 }

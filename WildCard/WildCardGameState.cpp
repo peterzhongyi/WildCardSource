@@ -37,11 +37,9 @@ void AWildCardGameState::BeginPlay()
             UE_LOG(LogTemp, Warning, TEXT("Player Character %d: %s"), i, *PlayerCharacters[i]->GetName());
 
             // Check if possessed by player controller
-            ACharacter *Character = Cast<ACharacter>(PlayerCharacters[i]);
-            if (Character)
+            if (ACharacter *Character = Cast<ACharacter>(PlayerCharacters[i]))
             {
-                APlayerController *PC = Cast<APlayerController>(Character->GetController());
-                if (PC)
+                if (APlayerController *PC = Cast<APlayerController>(Character->GetController()))
                 {
                     UE_LOG(LogTemp, Warning, TEXT("Player Character %d: %s is possessed by a player controller"), i, *Character->GetName());
                     CurrentPlayerIndex = i;
@@ -66,8 +64,7 @@ AWildCardCharacter *AWildCardGameState::SwitchTurnEventFunction()
 
     int NextPlayerIndex = (CurrentPlayerIndex + 1) % PlayerCharacters.Num();
     UE_LOG(LogTemp, Warning, TEXT("NextPlayerIndex is %d"), NextPlayerIndex);
-    AActor *NextPlayer = PlayerCharacters[NextPlayerIndex];
-    if (NextPlayer)
+    if (AActor *NextPlayer = PlayerCharacters[NextPlayerIndex])
     {
         NextCharacter = Cast<AWildCardCharacter>(NextPlayer);
         if (!NextCharacter)
