@@ -9,6 +9,7 @@
 #include "WildCardCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChangedDelegate, float, NewStamina);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChangedDelegate, float, NewHealth);
 
 UCLASS(config=Game)
 class AWildCardCharacter : public ACharacter
@@ -50,6 +51,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Stats")
 	float MaxStamina;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Stats")
+	float Health;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Stats")
+	float MaxHealth;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Stats")
 	float StaminaPerUnitDistance;
 
@@ -57,6 +64,11 @@ public:
 	FVector PreviousLocation;
 
 	FOnStaminaChangedDelegate OnStaminaChanged;
+	FOnHealthChangedDelegate OnHealthChanged;
+
+	void UpdateStamina(float NewStamina);
+	void UpdateHealth(float NewHealth);
+	float GetHealth();
 
 	void FireBall();
 	
@@ -65,8 +77,6 @@ protected:
 	virtual void BeginPlay();
 
 	virtual void Tick(float DeltaTime) override;
-
-	void UpdateStamina(float NewStamina);
 
 	TSubclassOf<AProjectile> ProjectileClass;
 

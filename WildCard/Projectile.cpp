@@ -3,6 +3,8 @@
 
 #include "Projectile.h"
 
+#include "WildCardCharacter.h"
+
 // Sets default values
 AProjectile::AProjectile()
 {
@@ -11,13 +13,32 @@ AProjectile::AProjectile()
 
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
 	RootComponent = ProjectileMesh;
+
+	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
 }
 
 // Called when the game starts or when spawned
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+}
+
+void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse, const FHitResult& Hit)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnHit Called"));
+	AActor* ProjectileOwner = GetOwner();
+	AWildCardCharacter* character = Cast<AWildCardCharacter>(OtherActor);
+	if (character && OtherActor != ProjectileOwner)
+	{
+		float CurrentHealth = character->GetHealth();
+		float NewHealth = FMath::Max(0, CurrentHealth - 20.f);
+		character->UpdateHealth(NewHealth);
+	}
+
+	Destroy();
 }
 
 // Called every frame

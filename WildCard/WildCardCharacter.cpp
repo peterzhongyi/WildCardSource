@@ -54,6 +54,8 @@ AWildCardCharacter::AWildCardCharacter()
 	MaxStamina = 100.0f;
     Stamina = MaxStamina;
     StaminaPerUnitDistance = 0.03f; // Adjust this to change stamina consumption rate
+	MaxHealth = 100.0f;
+	Health = MaxHealth;
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -74,8 +76,6 @@ void AWildCardCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
     PreviousLocation = GetActorLocation();
-	
-	FireBall();
 }
 
 void AWildCardCharacter::Tick(float DeltaTime)
@@ -108,6 +108,19 @@ void AWildCardCharacter::UpdateStamina(float NewStamina)
 {
 	Stamina = NewStamina;
 	OnStaminaChanged.Broadcast(NewStamina);
+}
+
+void AWildCardCharacter::UpdateHealth(float NewHealth)
+{
+	Health = NewHealth;
+	UE_LOG(LogTemp, Warning, TEXT("Character Health updated %f"), Health);
+	// Broadcast event
+	OnHealthChanged.Broadcast(NewHealth);
+}
+
+float AWildCardCharacter::GetHealth()
+{
+	return Health;
 }
 
 void AWildCardCharacter::Move(const FInputActionValue& Value)
@@ -154,8 +167,9 @@ void AWildCardCharacter::FireBall()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Calling FireBall"));
 	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
-	FRotator Rotation = ProjectileSpawnPoint->GetComponentRotation();
-	GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, Rotation);
+	FRotator Rotation = GetControlRotation();
+	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, Rotation);
+	Projectile->SetOwner(this);
 }
 
 

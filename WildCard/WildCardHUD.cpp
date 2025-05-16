@@ -32,6 +32,7 @@ void AWildCardHUD::BeginPlay()
         {
             UE_LOG(LogTemp, Warning, TEXT("HUD current character set to %s"), *CurrentCharacter->GetName());
             CurrentCharacter->OnStaminaChanged.AddDynamic(this, &AWildCardHUD::OnStaminaChangedHandler);
+            CurrentCharacter->OnHealthChanged.AddDynamic(this, &AWildCardHUD::OnHealthChangedHandler);
         }
         else
         {
@@ -49,8 +50,11 @@ void AWildCardHUD::BeginPlay()
             UE_LOG(LogTemp, Warning, TEXT("Successfully created overlay widget"));
 
             // Set up HUD for CurrentCharacter
-            OverlayWidget->UpdateMaxStamina(CurrentCharacter->MaxStamina);
+            // Order is important! Otherwise dividing by 0
+            OverlayWidget->UpdateMaxStamina(CurrentCharacter->MaxStamina); 
             OverlayWidget->UpdateStamina(CurrentCharacter->Stamina);
+            OverlayWidget->UpdateMaxHealth(CurrentCharacter->MaxHealth);
+            OverlayWidget->UpdateHealth(CurrentCharacter->Health);
             OverlayWidget->AddToViewport();
         }
         else
@@ -77,6 +81,14 @@ void AWildCardHUD::OnStaminaChangedHandler(float NewStamina)
     }
 }
 
+void AWildCardHUD::OnHealthChangedHandler(float NewHealth)
+{
+    UE_LOG(LogTemp, Warning, TEXT("HUD received Health Change Update %f"), NewHealth);
+    if (OverlayWidget) {
+        OverlayWidget->UpdateHealth(NewHealth);
+    }
+}
+
 void AWildCardHUD::ChangeCharacter(AWildCardCharacter* NextCharacter)
 {
     if (CurrentCharacter == nullptr)
@@ -90,8 +102,13 @@ void AWildCardHUD::ChangeCharacter(AWildCardCharacter* NextCharacter)
         return;
     }
     CurrentCharacter->OnStaminaChanged.RemoveDynamic(this, &AWildCardHUD::OnStaminaChangedHandler);
+    CurrentCharacter->OnHealthChanged.RemoveDynamic(this, &AWildCardHUD::OnHealthChangedHandler);
     NextCharacter->OnStaminaChanged.AddDynamic(this, &AWildCardHUD::OnStaminaChangedHandler);
+    NextCharacter->OnHealthChanged.AddDynamic(this, &AWildCardHUD::OnHealthChangedHandler);
     OverlayWidget->UpdateMaxStamina(NextCharacter->MaxStamina);
     OverlayWidget->UpdateStamina(NextCharacter->Stamina);
+    OverlayWidget->UpdateMaxHealth(NextCharacter->MaxHealth);
+    OverlayWidget->UpdateHealth(NextCharacter->Health);
+    
     CurrentCharacter = NextCharacter;
 }

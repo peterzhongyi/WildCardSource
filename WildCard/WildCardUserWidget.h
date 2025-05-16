@@ -22,4 +22,10 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
     void UpdateMaxStamina(float MaxStamina);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateHealth(float NewHealth);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateMaxHealth(float MaxHealth);
 };

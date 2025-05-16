@@ -34,6 +34,9 @@ protected:
 	UFUNCTION()
 	void OnStaminaChangedHandler(float NewStamina);
 
+	UFUNCTION()
+	void OnHealthChangedHandler(float NewHealth);
+
     // Widget class reference
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UWildCardUserWidget> OverlayWidgetClass;

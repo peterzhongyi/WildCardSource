@@ -38,6 +38,9 @@ public:
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* SwitchTurnAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* CastAction;
     
     
     virtual void BeginPlay() override;
@@ -49,6 +52,7 @@ public:
 	void HandleMove(const FInputActionValue& Value);
 	void HandleLook(const FInputActionValue& Value);
 	void HandleSwitchTurn();
+	void HandleCast();
 
 	FOnSwitchTurnDelegate OnSwitchTurn;
 };

@@ -41,6 +41,12 @@ AWildCardPlayerController::AWildCardPlayerController()
     {
         UE_LOG(LogTemp, Error, TEXT("Can't find IA_SwitchTurn")); 
     }
+
+    CastAction = LoadObject<UInputAction>(nullptr, TEXT("/game/ThirdPerson/Input/Actions/IA_Cast")); 
+    if (!CastAction)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Can't find IA_Cast")); 
+    }
 }
 
 void AWildCardPlayerController::BeginPlay()
@@ -63,19 +69,13 @@ void AWildCardPlayerController::SetupInputComponent()
     // Set up input bindings
     if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
     {
-        UE_LOG(LogTemp, Warning, TEXT("Entered BindActions"));
-        // Jumping
+        UE_LOG(LogTemp, Warning, TEXT("Binding Actions"));
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AWildCardPlayerController::HandleJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleStopJumping);
-
-		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AWildCardPlayerController::HandleMove);
-
-		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWildCardPlayerController::HandleLook);
-
-        // Switch Turn
         EnhancedInputComponent->BindAction(SwitchTurnAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleSwitchTurn);
+        EnhancedInputComponent->BindAction(CastAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleCast);
     }
 }
 
@@ -141,7 +141,7 @@ void AWildCardPlayerController::HandleSwitchTurn()
         if (NextCharacter)
         {
             UE_LOG(LogTemp, Warning, TEXT("Next character is: %s"), *NextCharacter->GetName());
-            Possess(NextCharacter);
+            Possess(NextCharacter); // This will also change the WildCardCharacter variable
             AWildCardHUD* HUD = Cast<AWildCardHUD>(MyHUD);
             if (HUD)
             {
@@ -157,4 +157,9 @@ void AWildCardPlayerController::HandleSwitchTurn()
             SetControlRotation(NextCharacter->ControllerAngle);
         }
     }
+}
+
+void AWildCardPlayerController::HandleCast()
+{
+    WildCardCharacter->FireBall();
 }
