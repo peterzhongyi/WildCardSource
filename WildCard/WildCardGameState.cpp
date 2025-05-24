@@ -7,7 +7,7 @@
 
 AWildCardGameState::AWildCardGameState()
 {
-    static ConstructorHelpers::FClassFinder<ACharacter> PlayerCharacterBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
+    static ConstructorHelpers::FClassFinder<ACharacter> PlayerCharacterBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_SyntyCharacter"));
     if (PlayerCharacterBPClass.Class != nullptr)
     {
         PlayerCharacterClass = PlayerCharacterBPClass.Class;

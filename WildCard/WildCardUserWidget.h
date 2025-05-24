@@ -17,15 +17,12 @@ class WILDCARD_API UWildCardUserWidget : public UUserWidget
 public:
     // Declare the functions you want to call from C++
     // These must match the function names in your Blueprint
-    UFUNCTION(BlueprintImplementableEvent)
-    void UpdateStamina(float NewStamina);
-
-	UFUNCTION(BlueprintImplementableEvent)
-    void UpdateMaxStamina(float MaxStamina);
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateHealth(float NewHealth);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateMaxHealth(float MaxHealth);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateOverHeadHealthBar();
 };

@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Projectile.h"
+#include "WildCardUserWidget.h"
+#include "Components/WidgetComponent.h"
 #include "WildCardCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChangedDelegate, float, NewStamina);
@@ -79,6 +81,15 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 	TSubclassOf<AProjectile> ProjectileClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UWildCardUserWidget> OverHeadHealthBarClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	TObjectPtr<UWildCardUserWidget> OverHeadHealthBar;
 
 public:
 	/** Returns CameraBoom subobject **/

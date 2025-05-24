@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "WildCardCharacter.h"
+#include "WildCardOverlayWidget.h"
 #include "WildCardUserWidget.h" 
 #include "WildCardHUD.generated.h"
 
@@ -39,11 +40,11 @@ protected:
 
     // Widget class reference
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UWildCardUserWidget> OverlayWidgetClass;
+	TSubclassOf<UWildCardOverlayWidget> OverlayWidgetClass;
 
 	// Widget instance
 	UPROPERTY()
-	UWildCardUserWidget* OverlayWidget;
+	UWildCardOverlayWidget* OverlayWidget;
 
 	void BindWidgetCallbacks(AWildCardCharacter* character);
 	void UnBindWidgetCallbacks(AWildCardCharacter* character);

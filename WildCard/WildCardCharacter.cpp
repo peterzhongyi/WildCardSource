@@ -33,9 +33,9 @@ AWildCardCharacter::AWildCardCharacter()
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->JumpZVelocity = 400.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->MaxWalkSpeed = 380.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
@@ -69,6 +69,19 @@ AWildCardCharacter::AWildCardCharacter()
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSpawnPoint"));
 	ProjectileSpawnPoint->SetupAttachment(RootComponent);
+
+	HealthBarWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidgetComponent"));
+	HealthBarWidgetComponent->SetupAttachment(RootComponent);
+	HealthBarWidgetComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 120.0f)); // Adjust position above character
+	HealthBarWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarWidgetComponent->SetDrawSize(FVector2D(150.0f, 15.0f)); 
+
+	static ConstructorHelpers::FClassFinder<UWildCardUserWidget> OverHeadHeathBarObj(TEXT("/Game/ThirdPerson/Blueprints/WBP_Health"));
+	if (OverHeadHeathBarObj.Class != nullptr)
+	{
+		OverHeadHealthBarClass = OverHeadHeathBarObj.Class;
+		UE_LOG(LogTemp, Warning, TEXT("OverHeadHealthBarClass set to %s"), *OverHeadHealthBarClass->GetName());
+	}
 }
 
 void AWildCardCharacter::BeginPlay()
@@ -76,6 +89,19 @@ void AWildCardCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
     PreviousLocation = GetActorLocation();
+
+	if (OverHeadHealthBarClass != nullptr && HealthBarWidgetComponent != nullptr)
+	{
+		HealthBarWidgetComponent->SetWidgetClass(OverHeadHealthBarClass);
+		OverHeadHealthBar = Cast<UWildCardUserWidget>(HealthBarWidgetComponent->GetUserWidgetObject());
+		if (OverHeadHealthBar)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Refreshing OverHeadHealthBar"));
+			OverHeadHealthBar->UpdateMaxHealth(MaxHealth);
+			OverHeadHealthBar->UpdateHealth(Health);
+			OverHeadHealthBar->UpdateOverHeadHealthBar();
+		}
+	}
 }
 
 void AWildCardCharacter::Tick(float DeltaTime)
@@ -116,6 +142,11 @@ void AWildCardCharacter::UpdateHealth(float NewHealth)
 	UE_LOG(LogTemp, Warning, TEXT("Character Health updated %f"), Health);
 	// Broadcast event
 	OnHealthChanged.Broadcast(NewHealth);
+	if (OverHeadHealthBar != nullptr)
+	{
+		OverHeadHealthBar->UpdateHealth(Health);
+		OverHeadHealthBar->UpdateOverHeadHealthBar();
+	}
 }
 
 float AWildCardCharacter::GetHealth()

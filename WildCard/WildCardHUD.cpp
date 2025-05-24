@@ -36,7 +36,7 @@ void AWildCardHUD::RefreshOverlay()
 AWildCardHUD::AWildCardHUD()
 {
     // Constructor - initialize anything needed here
-    static ConstructorHelpers::FClassFinder<UWildCardUserWidget> OverlayWidgetObj(TEXT("/Game/ThirdPerson/Blueprints/WBP_Overlay"));
+    static ConstructorHelpers::FClassFinder<UWildCardOverlayWidget> OverlayWidgetObj(TEXT("/Game/ThirdPerson/Blueprints/WBP_Overlay"));
     if (OverlayWidgetObj.Class != nullptr)
     {
         OverlayWidgetClass = OverlayWidgetObj.Class;
@@ -68,7 +68,7 @@ void AWildCardHUD::BeginPlay()
     // Create the overlay widget
     if (OverlayWidgetClass)
     {
-        OverlayWidget = CreateWidget<UWildCardUserWidget>(GetOwningPlayerController(), OverlayWidgetClass);
+        OverlayWidget = CreateWidget<UWildCardOverlayWidget>(GetOwningPlayerController(), OverlayWidgetClass);
         if (OverlayWidget)
         {
             UE_LOG(LogTemp, Warning, TEXT("Successfully created overlay widget"));
