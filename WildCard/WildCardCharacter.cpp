@@ -82,6 +82,9 @@ AWildCardCharacter::AWildCardCharacter()
 		OverHeadHealthBarClass = OverHeadHeathBarObj.Class;
 		UE_LOG(LogTemp, Warning, TEXT("OverHeadHealthBarClass set to %s"), *OverHeadHealthBarClass->GetName());
 	}
+
+	GreatswordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GreatswordMesh"));
+	GreatswordMesh->SetupAttachment(GetMesh());
 }
 
 void AWildCardCharacter::BeginPlay()
