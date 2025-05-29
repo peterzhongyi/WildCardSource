@@ -47,6 +47,12 @@ AWildCardPlayerController::AWildCardPlayerController()
     {
         UE_LOG(LogTemp, Error, TEXT("Can't find IA_Cast")); 
     }
+
+    AttackAction = LoadObject<UInputAction>(nullptr, TEXT("/game/ThirdPerson/Input/Actions/IA_Attack")); 
+    if (!AttackAction)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Can't find IA_Attack")); 
+    }
 }
 
 void AWildCardPlayerController::BeginPlay()
@@ -76,6 +82,7 @@ void AWildCardPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWildCardPlayerController::HandleLook);
         EnhancedInputComponent->BindAction(SwitchTurnAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleSwitchTurn);
         EnhancedInputComponent->BindAction(CastAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleCast);
+        EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleAttack);
     }
 }
 
@@ -157,5 +164,18 @@ void AWildCardPlayerController::HandleSwitchTurn()
 
 void AWildCardPlayerController::HandleCast()
 {
-    WildCardCharacter->FireBall();
+    if (WildCardCharacter)
+    {
+        WildCardCharacter->FireBall();
+    }
+    
 }
+
+void AWildCardPlayerController::HandleAttack()
+{
+    if (WildCardCharacter)
+    {
+        WildCardCharacter->Attack();
+    }
+}
+

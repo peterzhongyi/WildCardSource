@@ -82,6 +82,10 @@ AWildCardCharacter::AWildCardCharacter()
 		OverHeadHealthBarClass = OverHeadHeathBarObj.Class;
 		UE_LOG(LogTemp, Warning, TEXT("OverHeadHealthBarClass set to %s"), *OverHeadHealthBarClass->GetName());
 	}
+
+	GreatswordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Greatsword"));
+	GreatswordMesh->SetupAttachment(GetMesh(), FName(TEXT("hand_l")));
+	
 }
 
 void AWildCardCharacter::BeginPlay()
@@ -102,6 +106,8 @@ void AWildCardCharacter::BeginPlay()
 			OverHeadHealthBar->UpdateOverHeadHealthBar();
 		}
 	}
+
+	GreatswordMesh->OnComponentBeginOverlap.AddDynamic(this, &AWildCardCharacter::OnSwordOverlap);
 }
 
 void AWildCardCharacter::Tick(float DeltaTime)
@@ -203,6 +209,28 @@ void AWildCardCharacter::FireBall()
 	Projectile->SetOwner(this);
 }
 
+void AWildCardCharacter::Attack()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Calling Attack version 2"));
+	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
+	}
+}
+
+void AWildCardCharacter::OnSwordOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor == this) return;
+
+	AWildCardCharacter* OtherCharacter = Cast<AWildCardCharacter>(OtherActor);
+	if (OtherCharacter == nullptr) return;
+	
+	if (OtherComp != OtherCharacter->GetCapsuleComponent()) return;
+	UE_LOG(LogTemp, Warning, TEXT("Sword hit component: %s"), *OtherComp->GetName());
+
+	
+	UE_LOG(LogTemp, Warning, TEXT("OnSwordHit Called"));
+}
 
 
 

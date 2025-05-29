@@ -41,6 +41,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CastAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* AttackAction;
     
     
     virtual void BeginPlay() override;
@@ -53,6 +56,7 @@ public:
 	void HandleLook(const FInputActionValue& Value);
 	void HandleSwitchTurn();
 	void HandleCast();
+	void HandleAttack();
 
 	FOnSwitchTurnDelegate OnSwitchTurn;
 };

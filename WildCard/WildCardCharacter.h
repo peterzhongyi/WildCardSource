@@ -73,6 +73,8 @@ public:
 	float GetHealth();
 
 	void FireBall();
+
+	void Attack();
 	
 protected:	
 	// To add mapping context
@@ -90,6 +92,15 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TObjectPtr<UWildCardUserWidget> OverHeadHealthBar;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<UStaticMeshComponent> GreatswordMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> AttackMontage;
+
+	UFUNCTION()
+	void OnSwordOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
 	/** Returns CameraBoom subobject **/

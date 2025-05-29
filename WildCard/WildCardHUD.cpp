@@ -95,7 +95,7 @@ void AWildCardHUD::Tick(float DeltaSeconds)
 
 void AWildCardHUD::OnStaminaChangedHandler(float NewStamina)
 {
-    UE_LOG(LogTemp, Warning, TEXT("HUD received Stamina Change Update %f"), NewStamina);
+    // UE_LOG(LogTemp, Warning, TEXT("HUD received Stamina Change Update %f"), NewStamina);
     if (OverlayWidget) {
         OverlayWidget->UpdateStamina(NewStamina);
     }
