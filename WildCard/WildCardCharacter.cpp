@@ -136,6 +136,13 @@ void AWildCardCharacter::Tick(float DeltaTime)
         // Update previous location
         PreviousLocation = CurrentLocation;
     }
+
+	if (bIsPreparingAttack && Controller)
+	{
+		FRotator ControlRotation = Controller->GetControlRotation();
+		FRotator NewRotation = FRotator(0, ControlRotation.Yaw, 0);
+		SetActorRotation(NewRotation);
+	}
 }
 
 void AWildCardCharacter::UpdateStamina(float NewStamina)
@@ -164,10 +171,18 @@ float AWildCardCharacter::GetHealth()
 
 void AWildCardCharacter::Move(const FInputActionValue& Value)
 {
-	if (Stamina <= 0.f) {
+	if (Stamina <= 0.f)
+	{
 		UE_LOG(LogTemp, Warning, TEXT("Can't move, no Stamina: %f"), Stamina);
 		return;
 	}
+
+	if (bIsPreparingAttack)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't move, is preparing attack"));
+		return;
+	}
+	
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -242,12 +257,21 @@ void AWildCardCharacter::FireBall()
 void AWildCardCharacter::Attack()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Calling Attack"));
+	if (!bIsPreparingAttack)
+	{
+		// Enter prepare attack state
+		bIsPreparingAttack = true;
+		UE_LOG(LogTemp, Warning, TEXT("Entering prepare attack state"));
+		return;
+	}
 	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
 	}
+	bIsPreparingAttack = false;
 }
 
+// Since OnSwordOverlap is triggered by begin overlap, there's no need to de-dupe collision events.
 void AWildCardCharacter::OnSwordOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnSwordOverlap Called"));
@@ -273,6 +297,14 @@ void AWildCardCharacter::Hit()
 	float CurrentHealth = GetHealth();
 	float NewHealth = FMath::Max(0, CurrentHealth - 20.f);
 	UpdateHealth(NewHealth);
+}
+
+void AWildCardCharacter::Cancel()
+{
+	if (bIsPreparingAttack)
+	{
+		bIsPreparingAttack = false;
+	}
 }
 
 

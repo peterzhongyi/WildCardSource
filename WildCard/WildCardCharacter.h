@@ -83,6 +83,8 @@ public:
 	void Attack();
 
 	void Hit();
+
+	void Cancel();
 	
 protected:	
 	// To add mapping context
@@ -112,6 +114,9 @@ protected:
 
 	UFUNCTION()
 	void OnSwordOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	bool bIsPreparingAttack;
 
 public:
 	/** Returns CameraBoom subobject **/
