@@ -85,7 +85,7 @@ AWildCardCharacter::AWildCardCharacter()
 
 	GreatswordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Greatsword"));
 	GreatswordMesh->SetupAttachment(GetMesh(), FName(TEXT("hand_l")));
-	
+	GreatswordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AWildCardCharacter::BeginPlay()
@@ -108,6 +108,8 @@ void AWildCardCharacter::BeginPlay()
 	}
 
 	GreatswordMesh->OnComponentBeginOverlap.AddDynamic(this, &AWildCardCharacter::OnSwordOverlap);
+	UE_LOG(LogTemp, Warning, TEXT("Sword collision state: %d"), 
+			  (int32)GreatswordMesh->GetCollisionEnabled());
 }
 
 void AWildCardCharacter::Tick(float DeltaTime)
@@ -200,6 +202,34 @@ void AWildCardCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void AWildCardCharacter::EnableSwordCollision()
+{
+	if (GreatswordMesh != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SwordCollision Enabled"));
+		GreatswordMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("EnableSwordCollision: GreatswordMesh is null"));
+	}
+	
+	
+}
+
+void AWildCardCharacter::DisableSwordCollision()
+{
+	if (GreatswordMesh != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SwordCollision Disabled"));
+		GreatswordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("DisableSwordCollision: GreatswordMesh is null"));
+	}
+}
+
 void AWildCardCharacter::FireBall()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Calling FireBall"));
@@ -211,7 +241,7 @@ void AWildCardCharacter::FireBall()
 
 void AWildCardCharacter::Attack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Calling Attack version 2"));
+	UE_LOG(LogTemp, Warning, TEXT("Calling Attack"));
 	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
@@ -220,6 +250,7 @@ void AWildCardCharacter::Attack()
 
 void AWildCardCharacter::OnSwordOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Warning, TEXT("OnSwordOverlap Called"));
 	if (OtherActor == this) return;
 
 	AWildCardCharacter* OtherCharacter = Cast<AWildCardCharacter>(OtherActor);
@@ -228,9 +259,20 @@ void AWildCardCharacter::OnSwordOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	if (OtherComp != OtherCharacter->GetCapsuleComponent()) return;
 	UE_LOG(LogTemp, Warning, TEXT("Sword hit component: %s"), *OtherComp->GetName());
 
-	
-	UE_LOG(LogTemp, Warning, TEXT("OnSwordHit Called"));
+	OtherCharacter->Hit();
 }
 
+void AWildCardCharacter::Hit()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Calling Hit"));
+	if (HitMontage && GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(HitMontage);
+	}
+
+	float CurrentHealth = GetHealth();
+	float NewHealth = FMath::Max(0, CurrentHealth - 20.f);
+	UpdateHealth(NewHealth);
+}
 
 

@@ -43,6 +43,12 @@ public:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	UFUNCTION(BlueprintCallable)
+	void EnableSwordCollision();
+
+	UFUNCTION(BlueprintCallable)
+	void DisableSwordCollision();
+
 	// Record Controller Angle between turns.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller")
     FRotator ControllerAngle;
@@ -75,6 +81,8 @@ public:
 	void FireBall();
 
 	void Attack();
+
+	void Hit();
 	
 protected:	
 	// To add mapping context
@@ -98,6 +106,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> AttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> HitMontage;
 
 	UFUNCTION()
 	void OnSwordOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
