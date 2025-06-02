@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Projectile.h"
+#include "SummonStone.h"
 #include "WildCardUserWidget.h"
 #include "Components/WidgetComponent.h"
 #include "WildCardCharacter.generated.h"
@@ -85,6 +86,8 @@ public:
 	void Hit();
 
 	void Cancel();
+
+	void Summon();
 	
 protected:	
 	// To add mapping context
@@ -93,6 +96,7 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 	TSubclassOf<AProjectile> ProjectileClass;
+	TSubclassOf<ASummonStone> SummonStoneClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;

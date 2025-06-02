@@ -66,6 +66,13 @@ AWildCardCharacter::AWildCardCharacter()
         ProjectileClass = ProjectileObj.Class;
         UE_LOG(LogTemp, Warning, TEXT("ProjectileClass set to %s"), *ProjectileClass->GetName());
     }
+	static ConstructorHelpers::FClassFinder<ASummonStone> SummonStoneObj(TEXT("/Game/ThirdPerson/Blueprints/BP_SummonStone"));
+	if (SummonStoneObj.Class != nullptr)
+	{
+		SummonStoneClass = SummonStoneObj.Class;
+		UE_LOG(LogTemp, Warning, TEXT("SummonStoneClass set to %s"), *SummonStoneClass->GetName());
+	}
+
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSpawnPoint"));
 	ProjectileSpawnPoint->SetupAttachment(RootComponent);
@@ -305,6 +312,15 @@ void AWildCardCharacter::Cancel()
 	{
 		bIsPreparingAttack = false;
 	}
+}
+
+void AWildCardCharacter::Summon()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Calling Summon"));
+	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
+	FRotator Rotation = GetControlRotation();
+	ASummonStone* SummonStone = GetWorld()->SpawnActor<ASummonStone>(SummonStoneClass, Location, Rotation);
+	SummonStone->SetOwner(this);
 }
 
 

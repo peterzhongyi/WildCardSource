@@ -59,6 +59,12 @@ AWildCardPlayerController::AWildCardPlayerController()
     {
         UE_LOG(LogTemp, Error, TEXT("Can't find IA_Cancel")); 
     }
+
+    SummonAction = LoadObject<UInputAction>(nullptr, TEXT("/game/ThirdPerson/Input/Actions/IA_Summon")); 
+    if (!SummonAction)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Can't find IA_Summon")); 
+    }
 }
 
 void AWildCardPlayerController::BeginPlay()
@@ -90,6 +96,7 @@ void AWildCardPlayerController::SetupInputComponent()
         EnhancedInputComponent->BindAction(CastAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleCast);
         EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleAttack);
         EnhancedInputComponent->BindAction(CancelAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleCancel);
+        EnhancedInputComponent->BindAction(SummonAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleSummon);
     }
 }
 
@@ -191,6 +198,14 @@ void AWildCardPlayerController::HandleCancel()
     if (WildCardCharacter)
     {
         WildCardCharacter->Cancel();
+    }
+}
+
+void AWildCardPlayerController::HandleSummon()
+{
+    if (WildCardCharacter)
+    {
+        WildCardCharacter->Summon();
     }
 }
 

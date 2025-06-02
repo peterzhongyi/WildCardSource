@@ -47,6 +47,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CancelAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* SummonAction;
     
     
     virtual void BeginPlay() override;
@@ -61,6 +64,7 @@ public:
 	void HandleCast();
 	void HandleAttack();
 	void HandleCancel();
+	void HandleSummon();
 
 	FOnSwitchTurnDelegate OnSwitchTurn;
 };
