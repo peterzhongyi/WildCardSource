@@ -2,6 +2,8 @@
 
 
 #include "SummonStone.h"
+#include "WildCardGameState.h"
+#include "WildCardCharacter.h"
 
 ASummonStone::ASummonStone()
 {
@@ -17,6 +19,16 @@ ASummonStone::ASummonStone()
 		ProjectileMovementComponent->bShouldBounce = true;
 		ProjectileMovementComponent->Bounciness = 0.5f; // Adjust bounce strength
 		ProjectileMovementComponent->Friction = 0.5f;   // Add some friction to slow down over time
+	}
+
+	static ConstructorHelpers::FClassFinder<AWildCardCharacter> CharacterObj(TEXT("/Game/ThirdPerson/Blueprints/BP_SyntyCharacter"));
+	if (CharacterObj.Class != nullptr)
+	{
+		CharacterClass = CharacterObj.Class;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't find CharacterClass"));
 	}
 }
 
@@ -42,6 +54,20 @@ void ASummonStone::Tick(float DeltaTime)
 		if (StationaryTime >= DestructionDelay)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("SummonStone destroying itself after being stationary"));
+
+			// Spawn the character at the stone's location
+			FVector SpawnLocation = GetActorLocation();
+			FRotator SpawnRotation = FRotator::ZeroRotator;
+    
+			 AWildCardCharacter* NewCharacter = GetWorld()->SpawnActor<AWildCardCharacter>(CharacterClass, SpawnLocation, SpawnRotation);
+
+			// Add to GameState's PlayerCharacters array
+			if (AWildCardGameState* GameState = Cast<AWildCardGameState>(GetWorld()->GetGameState()))
+			{
+				GameState->PlayerCharacters.Add(NewCharacter);
+				UE_LOG(LogTemp, Warning, TEXT("Added new character to PlayerCharacters array. Total count: %d"), GameState->PlayerCharacters.Num());
+			}
+			
 			Destroy();
 		}
 	}
