@@ -24,6 +24,7 @@ protected:
 	// Override the OnHit function to handle bouncing
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SummonStone")
 	TSubclassOf<class AWildCardCharacter> CharacterClass;
 	
 private:

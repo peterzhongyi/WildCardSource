@@ -21,21 +21,22 @@ ASummonStone::ASummonStone()
 		ProjectileMovementComponent->Friction = 0.5f;   // Add some friction to slow down over time
 	}
 
-	static ConstructorHelpers::FClassFinder<AWildCardCharacter> CharacterObj(TEXT("/Game/ThirdPerson/Blueprints/BP_SyntyCharacter"));
-	if (CharacterObj.Class != nullptr)
-	{
-		CharacterClass = CharacterObj.Class;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Can't find CharacterClass"));
-	}
+	
 }
 
 void ASummonStone::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if (!CharacterClass)
+	{
+		CharacterClass = LoadClass<AWildCardCharacter>(nullptr, TEXT("/Game/ThirdPerson/Blueprints/BP_SyntyCharacter.BP_SyntyCharacter_C"));
+	}
+
+	if (!CharacterClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("SummonStone cannot load CharacterClass"));
+	}
 }
 
 void ASummonStone::Tick(float DeltaTime)
