@@ -164,16 +164,6 @@ void AWildCardCharacter::Tick(float DeltaTime)
 	}
 }
 
-void AWildCardCharacter::PossessedBy(AController* NewController)
-{
-	if (Cast<AAIController>(NewController) && !IsEnemy)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Rejecting AI possession of non-enemy character: %s"), *GetName());
-		return; // Don't call Super, which prevents the possession
-	}
-	Super::PossessedBy(NewController);
-}
-
 void AWildCardCharacter::UpdateStamina(float NewStamina)
 {
 	Stamina = NewStamina;

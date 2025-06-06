@@ -97,9 +97,7 @@ protected:
 	virtual void BeginPlay();
 
 	virtual void Tick(float DeltaTime) override;
-
-	virtual void PossessedBy(AController* NewController) override;
-
+	
 	TSubclassOf<AProjectile> ProjectileClass;
 	TSubclassOf<ASummonStone> SummonStoneClass;
 
