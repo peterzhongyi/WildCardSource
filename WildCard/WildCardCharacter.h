@@ -69,6 +69,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Stats")
 	float StaminaPerUnitDistance;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+	bool IsEnemy = false;
+
 	UPROPERTY()
 	FVector PreviousLocation;
 
@@ -94,6 +97,8 @@ protected:
 	virtual void BeginPlay();
 
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void PossessedBy(AController* NewController) override;
 
 	TSubclassOf<AProjectile> ProjectileClass;
 	TSubclassOf<ASummonStone> SummonStoneClass;
@@ -122,6 +127,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsPreparingAttack;
 
+	
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

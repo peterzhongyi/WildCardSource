@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "WildCardCharacter.h"
+
+#include "AIController.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -117,6 +119,16 @@ void AWildCardCharacter::BeginPlay()
 	GreatswordMesh->OnComponentBeginOverlap.AddDynamic(this, &AWildCardCharacter::OnSwordOverlap);
 	UE_LOG(LogTemp, Warning, TEXT("Sword collision state: %d"), 
 			  (int32)GreatswordMesh->GetCollisionEnabled());
+
+	AAIController* AIController = Cast<AAIController>(GetController());
+	if (AIController != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AIController is not null"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AIController is null"));
+	}
 }
 
 void AWildCardCharacter::Tick(float DeltaTime)
@@ -150,6 +162,16 @@ void AWildCardCharacter::Tick(float DeltaTime)
 		FRotator NewRotation = FRotator(0, ControlRotation.Yaw, 0);
 		SetActorRotation(NewRotation);
 	}
+}
+
+void AWildCardCharacter::PossessedBy(AController* NewController)
+{
+	if (Cast<AAIController>(NewController) && !IsEnemy)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Rejecting AI possession of non-enemy character: %s"), *GetName());
+		return; // Don't call Super, which prevents the possession
+	}
+	Super::PossessedBy(NewController);
 }
 
 void AWildCardCharacter::UpdateStamina(float NewStamina)
