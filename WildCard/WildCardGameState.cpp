@@ -16,25 +16,21 @@ void AWildCardGameState::BeginPlay()
 
     APlayerController *PlayerController = GetWorld()->GetFirstPlayerController();
     WildCardPlayerController = Cast<AWildCardPlayerController>(PlayerController);
-
     if (WildCardPlayerController)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Binding WildCardPlayerController OnSwitchTurn Event"));
-        WildCardPlayerController->OnSwitchTurn.BindUObject(this, &AWildCardGameState::SwitchTurnEventFunction);
+        // UE_LOG(LogTemp, Warning, TEXT("Binding WildCardPlayerController OnSwitchTurn Event"));
+        // WildCardPlayerController->OnSwitchTurn.BindUObject(this, &AWildCardGameState::SwitchTurnEventFunction);
 
-        AWildCardCharacter* MainCharacter = Cast<AWildCardCharacter>(WildCardPlayerController->GetPawn());
-        if (MainCharacter)
+        if (AWildCardCharacter* MainCharacter = Cast<AWildCardCharacter>(WildCardPlayerController->GetPawn()))
         {
             Characters.Add(MainCharacter);
             CurrentPlayerIndex = 0;
             UE_LOG(LogTemp, Warning, TEXT("Added main character: %s"), *MainCharacter->GetName());
         }
     }
-
-    
 }
 
-AWildCardCharacter *AWildCardGameState::SwitchTurnEventFunction()
+AWildCardCharacter* AWildCardGameState::FindNextCharacter()
 {
     AWildCardCharacter *NextCharacter = nullptr;
     UE_LOG(LogTemp, Warning, TEXT("Notified on Switch Turn. CurrentPlayer is %d"), CurrentPlayerIndex);
@@ -44,8 +40,6 @@ AWildCardCharacter *AWildCardGameState::SwitchTurnEventFunction()
     {
         CurrentCharacter->ControllerAngle = WildCardPlayerController->GetControlRotation();
     }
-    // Reset CurrentCharacter's Stamina
-    CurrentCharacter->Stamina = CurrentCharacter->MaxStamina;
 
     int NextPlayerIndex = (CurrentPlayerIndex + 1) % Characters.Num();
     UE_LOG(LogTemp, Warning, TEXT("NextPlayerIndex is %d"), NextPlayerIndex);
@@ -64,4 +58,34 @@ AWildCardCharacter *AWildCardGameState::SwitchTurnEventFunction()
 
     CurrentPlayerIndex = NextPlayerIndex;
     return NextCharacter;
+}
+
+void AWildCardGameState::NextTurn()
+{
+    if (AWildCardCharacter *NextCharacter = FindNextCharacter())
+    {
+        // if (NextCharacter->IsEnemy)
+        // {
+        //     // TODO: Add enemy logic: jump 3 times then switch turn
+        //     return;
+        // }
+
+        // Reset NextCharacter's Stamina. This needs to be before HUD ChangeCharacter
+        // for it to refresh UI with up-to-date data
+        NextCharacter->Stamina = NextCharacter->MaxStamina;
+
+        WildCardPlayerController->Possess(NextCharacter);
+        if (AWildCardHUD* HUD = Cast<AWildCardHUD>(WildCardPlayerController->MyHUD))
+        {
+            HUD->ChangeCharacter(NextCharacter);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("Controller HUD is nullptr"));
+        }
+
+        // If NextCharacter's Controller Angle is never set, it will default to the initial controller angle
+        // set by UE logic somewhere.
+        WildCardPlayerController->SetControlRotation(NextCharacter->ControllerAngle);
+    }
 }

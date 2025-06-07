@@ -3,6 +3,8 @@
 
 #include "EnemySpawnPoint.h"
 
+#include "WildCardGameState.h"
+
 // Sets default values
 AEnemySpawnPoint::AEnemySpawnPoint()
 {
@@ -24,15 +26,31 @@ void AEnemySpawnPoint::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Delay spawning by 2 seconds
+	GetWorld()->GetTimerManager().SetTimer(
+		SpawnTimerHandle,
+		this,
+		&AEnemySpawnPoint::SpawnEnemy,
+		2.0f,
+		false
+	);
+}
+
+void AEnemySpawnPoint::SpawnEnemy()
+{
 	if (EnemyClass)
 	{
 		FVector SpawnLocation = GetActorLocation();
 		FRotator SpawnRotation = GetActorRotation();
-		
-		AWildCardCharacter* SpawnedEnemy = GetWorld()->SpawnActor<AWildCardCharacter>(EnemyClass, SpawnLocation, SpawnRotation);
-		if (SpawnedEnemy)
+
+		if (AWildCardCharacter* SpawnedEnemy = GetWorld()->SpawnActor<AWildCardCharacter>(EnemyClass, SpawnLocation, SpawnRotation))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Enemy spawned at %s"), *SpawnLocation.ToString());
+			if (AWildCardGameState* GameState = Cast<AWildCardGameState>(GetWorld()->GetGameState()))
+			{
+				GameState->Characters.Add(SpawnedEnemy);
+				UE_LOG(LogTemp, Warning, TEXT("Added new character to PlayerCharacters array. Total count: %d"), GameState->Characters.Num());
+			}
 		}
 	}
 	else

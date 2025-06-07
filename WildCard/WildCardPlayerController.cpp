@@ -6,6 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
+#include "WildCardGameState.h"
 #include "WildCardHUD.h"
 
 AWildCardPlayerController::AWildCardPlayerController()
@@ -76,7 +77,12 @@ void AWildCardPlayerController::BeginPlay()
     {
         Subsystem->AddMappingContext(DefaultMappingContext, 0);
     }
-    
+
+    WildCardGameState = Cast<AWildCardGameState>(GetWorld()->GetGameState());
+    if (!WildCardGameState)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Can't find WildCardGameState")); 
+    }
 }
 
 void AWildCardPlayerController::SetupInputComponent()
@@ -120,92 +126,48 @@ void AWildCardPlayerController::OnPossess(APawn* InPawn)
 void AWildCardPlayerController::HandleJump()
 {
     // UE_LOG(LogTemp, Warning, TEXT("Tried to Jump"));
-    if (WildCardCharacter)
-    {
-        WildCardCharacter->Jump();
-    }
+    WildCardCharacter->Jump();
 }
 
 void AWildCardPlayerController::HandleStopJumping()
 {
-    if (WildCardCharacter)
-    {
-        WildCardCharacter->StopJumping();
-    }
+    WildCardCharacter->StopJumping();
 }
 
 void AWildCardPlayerController::HandleMove(const FInputActionValue& Value)
 {
     // UE_LOG(LogTemp, Warning, TEXT("Tried to Move"));
-    if (WildCardCharacter)
-    {
-        WildCardCharacter->Move(Value);
-    }
+    WildCardCharacter->Move(Value);
 }
 
 void AWildCardPlayerController::HandleLook(const FInputActionValue& Value)
 {
-    if (WildCardCharacter)
-    {
-        WildCardCharacter->Look(Value);
-    }
+    WildCardCharacter->Look(Value);
 }
 
 void AWildCardPlayerController::HandleSwitchTurn()
 {
     UE_LOG(LogTemp, Warning, TEXT("Switching Turn"));
-    if (OnSwitchTurn.IsBound())
-    {
-        if (AWildCardCharacter* NextCharacter = OnSwitchTurn.Execute())
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Next character is: %s"), *NextCharacter->GetName());
-            Possess(NextCharacter); // This will also change the WildCardCharacter variable
-            if (AWildCardHUD* HUD = Cast<AWildCardHUD>(MyHUD))
-            {
-                HUD->ChangeCharacter(NextCharacter);
-            }
-            else
-            {
-                UE_LOG(LogTemp, Error, TEXT("Controller HUD is nullptr"));
-            }
-            
-            // If NextCharacter's Controller Angle is never set, it will default to the initial controller angle
-            // set by UE logic somewhere.
-            SetControlRotation(NextCharacter->ControllerAngle);
-        }
-    }
+    WildCardGameState->NextTurn();
 }
 
 void AWildCardPlayerController::HandleCast()
 {
-    if (WildCardCharacter)
-    {
-        WildCardCharacter->FireBall();
-    }
-    
+    WildCardCharacter->FireBall();
 }
 
 void AWildCardPlayerController::HandleAttack()
 {
-    if (WildCardCharacter)
-    {
-        WildCardCharacter->Attack();
-    }
+    WildCardCharacter->Attack();
 }
 
 void AWildCardPlayerController::HandleCancel()
 {
-    if (WildCardCharacter)
-    {
-        WildCardCharacter->Cancel();
-    }
+    WildCardCharacter->Cancel();
 }
 
 void AWildCardPlayerController::HandleSummon()
 {
-    if (WildCardCharacter)
-    {
-        WildCardCharacter->Summon();
-    }
+    WildCardCharacter->Summon();
 }
 

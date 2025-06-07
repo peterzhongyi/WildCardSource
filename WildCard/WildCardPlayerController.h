@@ -20,6 +20,9 @@ public:
 	UPROPERTY()
     AWildCardCharacter* WildCardCharacter;
 
+	UPROPERTY()
+	class AWildCardGameState* WildCardGameState;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
 

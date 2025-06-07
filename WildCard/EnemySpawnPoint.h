@@ -26,4 +26,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
 	USphereComponent* DebugSphere;
+
+	void SpawnEnemy();
+
+	FTimerHandle SpawnTimerHandle;
 };

@@ -17,7 +17,8 @@ class WILDCARD_API AWildCardGameState : public AGameStateBase
 	
 public:
 	AWildCardGameState();
-	AWildCardCharacter* SwitchTurnEventFunction();
+	AWildCardCharacter* FindNextCharacter();
+	void NextTurn();
 
 	AWildCardPlayerController* WildCardPlayerController;
 	TArray<AWildCardCharacter*> Characters;
