@@ -65,8 +65,8 @@ void ASummonStone::Tick(float DeltaTime)
 			// Add to GameState's PlayerCharacters array
 			if (AWildCardGameState* GameState = Cast<AWildCardGameState>(GetWorld()->GetGameState()))
 			{
-				GameState->PlayerCharacters.Add(NewCharacter);
-				UE_LOG(LogTemp, Warning, TEXT("Added new character to PlayerCharacters array. Total count: %d"), GameState->PlayerCharacters.Num());
+				GameState->Characters.Add(NewCharacter);
+				UE_LOG(LogTemp, Warning, TEXT("Added new character to PlayerCharacters array. Total count: %d"), GameState->Characters.Num());
 			}
 			
 			Destroy();

@@ -20,8 +20,7 @@ public:
 	AWildCardCharacter* SwitchTurnEventFunction();
 
 	AWildCardPlayerController* WildCardPlayerController;
-	TSubclassOf<ACharacter> PlayerCharacterClass;
-	TArray<AActor*> PlayerCharacters;
+	TArray<AWildCardCharacter*> Characters;
 	int CurrentPlayerIndex;
 
 protected:

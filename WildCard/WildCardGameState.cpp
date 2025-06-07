@@ -6,13 +6,7 @@
 #include "Kismet\GameplayStatics.h"
 
 AWildCardGameState::AWildCardGameState()
-{
-    static ConstructorHelpers::FClassFinder<ACharacter> PlayerCharacterBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_SyntyCharacter"));
-    if (PlayerCharacterBPClass.Class != nullptr)
-    {
-        PlayerCharacterClass = PlayerCharacterBPClass.Class;
-    }
-}
+{}
 
 void AWildCardGameState::BeginPlay()
 {
@@ -27,26 +21,17 @@ void AWildCardGameState::BeginPlay()
     {
         UE_LOG(LogTemp, Warning, TEXT("Binding WildCardPlayerController OnSwitchTurn Event"));
         WildCardPlayerController->OnSwitchTurn.BindUObject(this, &AWildCardGameState::SwitchTurnEventFunction);
-    }
 
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerCharacterClass, PlayerCharacters);
-    for (int32 i = 0; i < PlayerCharacters.Num(); i++)
-    {
-        if (PlayerCharacters[i])
+        AWildCardCharacter* MainCharacter = Cast<AWildCardCharacter>(WildCardPlayerController->GetPawn());
+        if (MainCharacter)
         {
-            UE_LOG(LogTemp, Warning, TEXT("Player Character %d: %s"), i, *PlayerCharacters[i]->GetName());
-
-            // Check if possessed by player controller
-            if (ACharacter *Character = Cast<ACharacter>(PlayerCharacters[i]))
-            {
-                if (APlayerController *PC = Cast<APlayerController>(Character->GetController()))
-                {
-                    UE_LOG(LogTemp, Warning, TEXT("Player Character %d: %s is possessed by a player controller"), i, *Character->GetName());
-                    CurrentPlayerIndex = i;
-                }
-            }
+            Characters.Add(MainCharacter);
+            CurrentPlayerIndex = 0;
+            UE_LOG(LogTemp, Warning, TEXT("Added main character: %s"), *MainCharacter->GetName());
         }
     }
+
+    
 }
 
 AWildCardCharacter *AWildCardGameState::SwitchTurnEventFunction()
@@ -54,7 +39,7 @@ AWildCardCharacter *AWildCardGameState::SwitchTurnEventFunction()
     AWildCardCharacter *NextCharacter = nullptr;
     UE_LOG(LogTemp, Warning, TEXT("Notified on Switch Turn. CurrentPlayer is %d"), CurrentPlayerIndex);
     // Record the controller angle of the current player.
-    AWildCardCharacter *CurrentCharacter = Cast<AWildCardCharacter>(PlayerCharacters[CurrentPlayerIndex]);
+    AWildCardCharacter *CurrentCharacter = Cast<AWildCardCharacter>(Characters[CurrentPlayerIndex]);
     if (CurrentCharacter)
     {
         CurrentCharacter->ControllerAngle = WildCardPlayerController->GetControlRotation();
@@ -62,9 +47,9 @@ AWildCardCharacter *AWildCardGameState::SwitchTurnEventFunction()
     // Reset CurrentCharacter's Stamina
     CurrentCharacter->Stamina = CurrentCharacter->MaxStamina;
 
-    int NextPlayerIndex = (CurrentPlayerIndex + 1) % PlayerCharacters.Num();
+    int NextPlayerIndex = (CurrentPlayerIndex + 1) % Characters.Num();
     UE_LOG(LogTemp, Warning, TEXT("NextPlayerIndex is %d"), NextPlayerIndex);
-    if (AActor *NextPlayer = PlayerCharacters[NextPlayerIndex])
+    if (AActor *NextPlayer = Characters[NextPlayerIndex])
     {
         NextCharacter = Cast<AWildCardCharacter>(NextPlayer);
         if (!NextCharacter)
