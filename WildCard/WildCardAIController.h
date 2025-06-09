@@ -30,8 +30,8 @@ protected:
 	UPROPERTY()
 	AWildCardCharacter* ControlledCharacter;
 
-	// Timer handle for jump behavior
-	FTimerHandle JumpTimerHandle;
+	// Timer handle for behavior
+	FTimerHandle TimerHandle;
 
 	// Function called by timer to make enemy jump
 	UFUNCTION()
