@@ -18,6 +18,11 @@ class WILDCARD_API AWildCardAIController : public AAIController
 public:
 	AWildCardAIController();
 
+	void BeginTurn();
+
+	UPROPERTY()
+	class AWildCardGameState* WildCardGameState;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
