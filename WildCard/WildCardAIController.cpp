@@ -3,9 +3,24 @@
 
 #include "WildCardAIController.h"
 
+#include "WildCardGameState.h"
+
 AWildCardAIController::AWildCardAIController()
 {
 	PrimaryActorTick.bCanEverTick = false;
+}
+
+void AWildCardAIController::BeginTurn()
+{
+	if (ControlledCharacter == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Begin turn failed because nullptr for for ControlledCharacter"));
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Begin turn for %s"), *ControlledCharacter->GetName());
+
+	// Start the jump timer - jump every 1 second
+	GetWorld()->GetTimerManager().SetTimer(JumpTimerHandle, this, &AWildCardAIController::EnemyAttack, 2.0f, false);
 }
 
 void AWildCardAIController::BeginPlay()
@@ -22,15 +37,20 @@ void AWildCardAIController::OnPossess(APawn* InPawn)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AI Controller possessed: %s"), *ControlledCharacter->GetName());
 	}
+
+	WildCardGameState = Cast<AWildCardGameState>(GetWorld()->GetGameState());
+	if (!WildCardGameState)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AIController Can't find WildCardGameState")); 
+	}
 }
 
-void AWildCardAIController::MakeEnemyJump()
+void AWildCardAIController::EnemyAttack()
 {
-	// Start the jump timer - jump every 1 second
-	GetWorld()->GetTimerManager().SetTimer(JumpTimerHandle, this, &AWildCardAIController::MakeEnemyJump, 2.0f, true);
-
 	if (ControlledCharacter)
 	{
-		ControlledCharacter->Jump();
+		ControlledCharacter->Attack();
+		ControlledCharacter->Attack();
 	}
+	WildCardGameState->NextTurn();
 }

@@ -190,6 +190,11 @@ float AWildCardCharacter::GetHealth()
 
 void AWildCardCharacter::Move(const FInputActionValue& Value)
 {
+	if (!InTurn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't move, not in turn"));
+		return;
+	}
 	if (Stamina <= 0.f)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Can't move, no Stamina: %f"), Stamina);
@@ -247,8 +252,6 @@ void AWildCardCharacter::EnableSwordCollision()
 	{
 		UE_LOG(LogTemp, Error, TEXT("EnableSwordCollision: GreatswordMesh is null"));
 	}
-	
-	
 }
 
 void AWildCardCharacter::DisableSwordCollision()
@@ -266,6 +269,11 @@ void AWildCardCharacter::DisableSwordCollision()
 
 void AWildCardCharacter::FireBall()
 {
+	if (!InTurn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't FireBall, not in turn"));
+		return;
+	}
 	UE_LOG(LogTemp, Warning, TEXT("Calling FireBall"));
 	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
 	FRotator Rotation = GetControlRotation();
@@ -275,6 +283,11 @@ void AWildCardCharacter::FireBall()
 
 void AWildCardCharacter::Attack()
 {
+	if (!InTurn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't Attack, not in turn"));
+		return;
+	}
 	UE_LOG(LogTemp, Warning, TEXT("Calling Attack"));
 	if (!bIsPreparingAttack)
 	{
@@ -328,6 +341,11 @@ void AWildCardCharacter::Cancel()
 
 void AWildCardCharacter::Summon()
 {
+	if (!InTurn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't Summon, not in turn"));
+		return;
+	}
 	UE_LOG(LogTemp, Warning, TEXT("Calling Summon"));
 	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
 	FRotator Rotation = GetControlRotation();

@@ -72,6 +72,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
 	bool IsEnemy = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+	bool InTurn = false;
+
 	UPROPERTY()
 	FVector PreviousLocation;
 
