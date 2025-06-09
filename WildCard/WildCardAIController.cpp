@@ -19,7 +19,6 @@ void AWildCardAIController::BeginTurn()
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Begin turn for %s"), *ControlledCharacter->GetName());
 
-	// Start the jump timer - jump every 1 second
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AWildCardAIController::EnemyAttack, 2.0f, false);
 }
 
