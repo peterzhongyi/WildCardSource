@@ -413,7 +413,8 @@ bool CalculateProjectileLaunchRotation(
 	}
 
 	float vx = x / t2;
-	float vy = (y / t2) + (1/2 * g * t2);
+	UE_LOG(LogTemp, Warning, TEXT("Equation is: (%f / %f) + (1/2) * (%f * %f)"), y, t2, g, t2);
+	float vy = (y / t2) + 0.5 * (g * t2);
 
 	float check_sum = FMath::Sqrt(vx * vx + vy * vy);
 	UE_LOG(LogTemp, Warning, TEXT("check_sum is %f"), check_sum);
