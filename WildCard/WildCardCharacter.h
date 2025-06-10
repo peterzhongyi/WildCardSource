@@ -75,6 +75,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
 	bool InTurn = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+	float CharacterGravity = 0.0;
+
 	UPROPERTY()
 	FVector PreviousLocation;
 
@@ -94,6 +97,8 @@ public:
 	void Cancel();
 
 	void Summon();
+
+	FRotator GetLowerArcDirection(FVector StartPoint, FVector TargetPoint, float InitialSpeed, float Gravity);
 	
 protected:	
 	// To add mapping context

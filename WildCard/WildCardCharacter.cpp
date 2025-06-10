@@ -276,8 +276,16 @@ void AWildCardCharacter::FireBall()
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Calling FireBall"));
 	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
-	FRotator Rotation = GetControlRotation();
-	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, Rotation);
+	UE_LOG(LogTemp, Warning, TEXT("Location --- %s"), *Location.ToString());
+	FVector TargetLocation = FVector(1000.0, 1000.0, 50.0);
+	UE_LOG(LogTemp, Warning, TEXT("TargetLocation --- %s"), *TargetLocation.ToString());
+	float InitialSpeed = ProjectileClass->GetDefaultObject<AProjectile>()->ProjectileMovementComponent->InitialSpeed;
+	UE_LOG(LogTemp, Warning, TEXT("Initial Speed --- %f"), InitialSpeed);
+	UE_LOG(LogTemp, Warning, TEXT("CharacterGravity --- %f"), CharacterGravity);
+	FRotator RotationVector = GetLowerArcDirection(Location, TargetLocation, InitialSpeed, CharacterGravity);
+	UE_LOG(LogTemp, Warning, TEXT("RotationVector --- %s"), *RotationVector.ToString());
+	
+	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, RotationVector);
 	Projectile->SetOwner(this);
 }
 
@@ -351,6 +359,100 @@ void AWildCardCharacter::Summon()
 	FRotator Rotation = GetControlRotation();
 	ASummonStone* SummonStone = GetWorld()->SpawnActor<ASummonStone>(SummonStoneClass, Location, Rotation);
 	SummonStone->SetOwner(this);
+}
+
+bool CalculateProjectileLaunchRotation(
+    const FVector& StartPoint,
+    const FVector& TargetPoint,
+    float InitialSpeed,
+    float Gravity,
+    bool bHighArc,
+    FRotator& OutRotation)
+{
+	// Calculate displacement vector
+	FVector Displacement = TargetPoint - StartPoint;
+    
+	// Calculate horizontal distance (XY plane)
+	float HorizontalDistance = FMath::Sqrt(Displacement.X * Displacement.X + Displacement.Y * Displacement.Y);
+	UE_LOG(LogTemp, Warning, TEXT("HorizontalDistance is: %f"), HorizontalDistance);
+    
+	// Calculate vertical displacement (Z axis)
+	float VerticalDisplacement = Displacement.Z;
+	UE_LOG(LogTemp, Warning, TEXT("VerticalDisplacement is: %f"), VerticalDisplacement);
+    
+	float x = HorizontalDistance;
+	float y = VerticalDisplacement;
+	float v0_squared = InitialSpeed * InitialSpeed;
+	float g = Gravity;
+	
+	float a = (g * g) / 4.0;
+	float b = y * g - v0_squared;
+	float c = x * x + y * y;
+    
+	// Calculate discriminant
+	float discriminant = b * b - 4.0f * a * c;
+    
+	// Check if solution exists
+	if (discriminant < 0.0f)
+	{
+		UE_LOG(LogTemp, Error, TEXT("discriminant is less than 0!"));
+		return false;
+	}
+
+	float sqrt_discriminant = FMath::Sqrt(discriminant);
+	float T1 = (-b + sqrt_discriminant) / (2.0f * a);
+	float T2 = (-b - sqrt_discriminant) / (2.0f * a);
+	float t1 = FMath::Sqrt(T1);
+	float t2 = FMath::Sqrt(T2);
+	UE_LOG(LogTemp, Warning, TEXT("t1 is %f"), t1);
+	UE_LOG(LogTemp, Warning, TEXT("t2 is %f"), t2);
+
+	if (t1 <= 0 || t2 <= 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("either t1 or t2 is 0"));
+	}
+
+	float vx = x / t2;
+	float vy = (y / t2) + (1/2 * g * t2);
+
+	float check_sum = FMath::Sqrt(vx * vx + vy * vy);
+	UE_LOG(LogTemp, Warning, TEXT("check_sum is %f"), check_sum);
+	
+	UE_LOG(LogTemp, Warning, TEXT("vx is %f"), vx);
+	UE_LOG(LogTemp, Warning, TEXT("vy is %f"), vy);
+	float launchAngle = FMath::Acos(vx / InitialSpeed);
+	if (vy < 0)
+	{
+		launchAngle = 2 * UE_PI - launchAngle;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("launchAngle is %f"), launchAngle);
+    
+	// Calculate azimuth angle (horizontal direction)
+	float azimuthAngle = FMath::Atan2(Displacement.Y, Displacement.X);
+    
+	// Convert to degrees and create rotation
+	float pitchDegrees = FMath::RadiansToDegrees(launchAngle);
+	float yawDegrees = FMath::RadiansToDegrees(azimuthAngle);
+    
+	OutRotation = FRotator(pitchDegrees, yawDegrees, 0.0f);
+    
+	return true;
+}
+
+FRotator AWildCardCharacter::GetLowerArcDirection(FVector StartPoint, FVector TargetPoint, float InitialSpeed, float Gravity)
+{
+	FRotator OutRotation;
+	bool bSuccess = CalculateProjectileLaunchRotation(
+		StartPoint, TargetPoint, InitialSpeed, Gravity, false, OutRotation);
+    
+	if (!bSuccess)
+	{
+		// Return zero rotation if no valid trajectory
+		UE_LOG(LogTemp, Warning, TEXT("No valid projectile trajectory found!"));
+		return FRotator::ZeroRotator;
+	}
+    
+	return OutRotation;
 }
 
 
