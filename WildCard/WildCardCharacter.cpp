@@ -12,6 +12,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/SceneComponent.h"
+#include "NavigationSystem.h"
+#include "NavMesh/RecastNavMesh.h"
+#include "Detour/DetourNavMesh.h"
+#include "NavMesh/RecastHelpers.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -284,6 +288,20 @@ void AWildCardCharacter::FireBall()
 	UE_LOG(LogTemp, Warning, TEXT("CharacterGravity --- %f"), CharacterGravity);
 	FRotator RotationVector = GetLowerArcDirection(Location, TargetLocation, InitialSpeed, CharacterGravity);
 	UE_LOG(LogTemp, Warning, TEXT("RotationVector --- %s"), *RotationVector.ToString());
+
+	TArray<FVector> potential_points = GetUniformNavMeshPoints(TargetLocation, InitialSpeed, CharacterGravity, 100.0);
+	// for (const FVector& Point : potential_points)
+	// {
+	// 	DrawDebugSphere(
+	// 		GetWorld(),
+	// 		Point,
+	// 		10.0f,           // Radius
+	// 		4,              // Segments
+	// 		FColor::Red,     // Color
+	// 		false,           // Persistent lines
+	// 		50.0f             // Lifetime in seconds
+	// 	);
+	// }
 	
 	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, RotationVector);
 	Projectile->SetOwner(this);
@@ -443,6 +461,51 @@ FRotator AWildCardCharacter::GetLowerArcDirection(FVector StartPoint, FVector Ta
 	}
     
 	return OutRotation;
+}
+
+TArray<FVector> AWildCardCharacter::GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing)
+{
+	TArray<FVector> UniformPoints;
+    
+	// Get navigation system
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	if (!NavSys)
+	{
+		return UniformPoints;
+	}
+    
+	ARecastNavMesh* NavMesh = Cast<ARecastNavMesh>(NavSys->GetDefaultNavDataInstance());
+	if (!NavMesh)
+	{
+		return UniformPoints;
+	}
+    
+	// Get nav mesh bounds
+	FBox NavBounds = NavMesh->GetNavMeshBounds();
+
+	float SpawnPointOffset = ProjectileSpawnPoint->GetRelativeLocation().Z;
+    
+	// Sample points in a grid pattern
+	for (float X = NavBounds.Min.X; X <= NavBounds.Max.X; X += GridSpacing)
+	{
+		for (float Y = NavBounds.Min.Y; Y <= NavBounds.Max.Y; Y += GridSpacing)
+		{
+			FVector TestPoint = FVector(X, Y, NavBounds.Max.Z + 100.0f); // Start above nav mesh
+            
+			// Project point down to nav mesh
+			FNavLocation NavLocation;
+			if (NavSys->ProjectPointToNavigation(TestPoint, NavLocation, FVector(100.0f, 100.0f, 1000000.0f)))
+			{
+				FRotator OutRotation;
+				if (CalculateProjectileLaunchRotation(NavLocation.Location + FVector(0, 0, SpawnPointOffset), TargetPoint, InitialSpeed, Gravity, false, OutRotation))
+				{
+					UniformPoints.Add(NavLocation.Location);
+				} 
+			}
+		}
+	}
+    
+	return UniformPoints;
 }
 
 
