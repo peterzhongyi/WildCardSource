@@ -374,11 +374,9 @@ bool CalculateProjectileLaunchRotation(
     
 	// Calculate horizontal distance (XY plane)
 	float HorizontalDistance = FMath::Sqrt(Displacement.X * Displacement.X + Displacement.Y * Displacement.Y);
-	UE_LOG(LogTemp, Warning, TEXT("HorizontalDistance is: %f"), HorizontalDistance);
     
 	// Calculate vertical displacement (Z axis)
 	float VerticalDisplacement = Displacement.Z;
-	UE_LOG(LogTemp, Warning, TEXT("VerticalDisplacement is: %f"), VerticalDisplacement);
     
 	float x = HorizontalDistance;
 	float y = VerticalDisplacement;
@@ -404,8 +402,6 @@ bool CalculateProjectileLaunchRotation(
 	float T2 = (-b - sqrt_discriminant) / (2.0f * a);
 	float t1 = FMath::Sqrt(T1);
 	float t2 = FMath::Sqrt(T2);
-	UE_LOG(LogTemp, Warning, TEXT("t1 is %f"), t1);
-	UE_LOG(LogTemp, Warning, TEXT("t2 is %f"), t2);
 
 	if (t1 <= 0 || t2 <= 0)
 	{
@@ -413,20 +409,13 @@ bool CalculateProjectileLaunchRotation(
 	}
 
 	float vx = x / t2;
-	UE_LOG(LogTemp, Warning, TEXT("Equation is: (%f / %f) + (1/2) * (%f * %f)"), y, t2, g, t2);
 	float vy = (y / t2) + 0.5 * (g * t2);
-
-	float check_sum = FMath::Sqrt(vx * vx + vy * vy);
-	UE_LOG(LogTemp, Warning, TEXT("check_sum is %f"), check_sum);
 	
-	UE_LOG(LogTemp, Warning, TEXT("vx is %f"), vx);
-	UE_LOG(LogTemp, Warning, TEXT("vy is %f"), vy);
 	float launchAngle = FMath::Acos(vx / InitialSpeed);
 	if (vy < 0)
 	{
 		launchAngle = 2 * UE_PI - launchAngle;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("launchAngle is %f"), launchAngle);
     
 	// Calculate azimuth angle (horizontal direction)
 	float azimuthAngle = FMath::Atan2(Displacement.Y, Displacement.X);
