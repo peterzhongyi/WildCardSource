@@ -36,4 +36,7 @@ protected:
 	// Function called by timer to make enemy attack
 	UFUNCTION()
 	void EnemyAttack();
+
+	UFUNCTION()
+	void AttackDone();
 };

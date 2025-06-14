@@ -19,6 +19,9 @@ void AWildCardAIController::BeginTurn()
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Begin turn for %s"), *ControlledCharacter->GetName());
 
+	// Bind to attack finished delegate
+	ControlledCharacter->OnAttackFinished.AddDynamic(this, &AWildCardAIController::AttackDone);
+	
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AWildCardAIController::EnemyAttack, 2.0f, false);
 }
 
@@ -51,5 +54,16 @@ void AWildCardAIController::EnemyAttack()
 		ControlledCharacter->Attack();
 		ControlledCharacter->Attack();
 	}
-	WildCardGameState->NextTurn();
+}
+
+void AWildCardAIController::AttackDone()
+{
+	if (ControlledCharacter->Stamina <= 0.0f)
+	{
+		ControlledCharacter->OnAttackFinished.RemoveDynamic(this, &AWildCardAIController::AttackDone);
+		WildCardGameState->NextTurn();
+		return;
+	}
+
+	EnemyAttack();
 }

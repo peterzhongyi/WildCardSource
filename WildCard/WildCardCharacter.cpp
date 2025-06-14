@@ -271,6 +271,12 @@ void AWildCardCharacter::DisableSwordCollision()
 	}
 }
 
+void AWildCardCharacter::AttackEnded()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Broadcasting AttackEnded event"));
+	OnAttackFinished.Broadcast();
+}
+
 void AWildCardCharacter::FireBall()
 {
 	if (!InTurn)
@@ -325,6 +331,8 @@ void AWildCardCharacter::Attack()
 	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
+		float NewStamina = FMath::Max(0.0f, Stamina - 30.0f);
+		UpdateStamina(NewStamina);
 	}
 	bIsPreparingAttack = false;
 }

@@ -13,6 +13,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChangedDelegate, float, NewStamina);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChangedDelegate, float, NewHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackFinishedDelegate);
 
 UCLASS(config=Game)
 class AWildCardCharacter : public ACharacter
@@ -50,6 +51,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DisableSwordCollision();
 
+	UFUNCTION(BlueprintCallable)
+	void AttackEnded();
+
 	// Record Controller Angle between turns.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller")
     FRotator ControllerAngle;
@@ -83,6 +87,7 @@ public:
 
 	FOnStaminaChangedDelegate OnStaminaChanged;
 	FOnHealthChangedDelegate OnHealthChanged;
+	FOnAttackFinishedDelegate OnAttackFinished;
 
 	void UpdateStamina(float NewStamina);
 	void UpdateHealth(float NewHealth);
@@ -129,7 +134,7 @@ protected:
 
 	UFUNCTION()
 	void OnSwordOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsPreparingAttack;
 
