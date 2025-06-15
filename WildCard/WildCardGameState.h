@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
 #include "WildCardPlayerController.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "WildCardGameState.generated.h"
 
 /**
@@ -19,6 +20,7 @@ public:
 	AWildCardGameState();
 	AWildCardCharacter* FindNextCharacter();
 	void NextTurn();
+	AWildCardCharacter* MainCharacter;
 
 	AWildCardPlayerController* WildCardPlayerController;
 	TArray<AWildCardCharacter*> Characters;

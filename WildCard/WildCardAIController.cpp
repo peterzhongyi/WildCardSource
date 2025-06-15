@@ -55,10 +55,27 @@ void AWildCardAIController::Action()
 		return;
 	}
 
-	
-	
-	ControlledCharacter->Attack();
-	ControlledCharacter->Attack();
+	AWildCardCharacter* PlayerCharacter = WildCardGameState->MainCharacter;
+	if (PlayerCharacter == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("EnemyAttack - PlayerCharacter is nullptr")); 
+		return;
+	}
+
+	float DistanceToPlayer = FVector::Dist(ControlledCharacter->GetActorLocation(), PlayerCharacter->GetActorLocation());
+	float AttackRange = 250.0f; // Adjust this value as needed
+
+	if (DistanceToPlayer > AttackRange)
+	{
+		// Move towards player
+		UE_LOG(LogTemp, Warning, TEXT("Moving towards player, distance: %f"), DistanceToPlayer);
+		MoveToActor(PlayerCharacter); // Stop a bit short of attack range
+	}
+	else
+	{
+		ControlledCharacter->Attack();
+		ControlledCharacter->Attack();
+	}
 }
 
 void AWildCardAIController::ActionDone()
@@ -71,4 +88,13 @@ void AWildCardAIController::ActionDone()
 	}
 
 	Action();
+}
+
+void AWildCardAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
+{
+	Super::OnMoveCompleted(RequestID, Result);
+	
+	// After movement is complete, mark action as done
+	UE_LOG(LogTemp, Warning, TEXT("OnMoveCompleted called"));
+	ActionDone();
 }

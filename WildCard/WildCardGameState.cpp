@@ -23,13 +23,14 @@ void AWildCardGameState::BeginPlay()
         // UE_LOG(LogTemp, Warning, TEXT("Binding WildCardPlayerController OnSwitchTurn Event"));
         // WildCardPlayerController->OnSwitchTurn.BindUObject(this, &AWildCardGameState::SwitchTurnEventFunction);
 
-        if (AWildCardCharacter* MainCharacter = Cast<AWildCardCharacter>(WildCardPlayerController->GetPawn()))
+        if (AWildCardCharacter* Character = Cast<AWildCardCharacter>(WildCardPlayerController->GetPawn()))
         {
-            Characters.Add(MainCharacter);
+            MainCharacter = Character;
+            Characters.Add(Character);
             // This is temporary, the turn order should be determined by speed.
-            MainCharacter->InTurn = true;
+            Character->InTurn = true;
             CurrentPlayerIndex = 0;
-            UE_LOG(LogTemp, Warning, TEXT("Added main character: %s"), *MainCharacter->GetName());
+            UE_LOG(LogTemp, Warning, TEXT("Added main character: %s"), *Character->GetName());
         }
     }
 }
