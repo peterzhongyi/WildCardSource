@@ -20,9 +20,9 @@ void AWildCardAIController::BeginTurn()
 	UE_LOG(LogTemp, Warning, TEXT("Begin turn for %s"), *ControlledCharacter->GetName());
 
 	// Bind to attack finished delegate
-	ControlledCharacter->OnAttackFinished.AddDynamic(this, &AWildCardAIController::AttackDone);
+	ControlledCharacter->OnAttackFinished.AddDynamic(this, &AWildCardAIController::ActionDone);
 	
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AWildCardAIController::EnemyAttack, 2.0f, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AWildCardAIController::Action, 2.0f, false);
 }
 
 void AWildCardAIController::BeginPlay()
@@ -47,23 +47,28 @@ void AWildCardAIController::OnPossess(APawn* InPawn)
 	}
 }
 
-void AWildCardAIController::EnemyAttack()
+void AWildCardAIController::Action()
 {
-	if (ControlledCharacter)
+	if (ControlledCharacter == nullptr)
 	{
-		ControlledCharacter->Attack();
-		ControlledCharacter->Attack();
+		UE_LOG(LogTemp, Error, TEXT("EnemyAttack - ControlledCharacter is nullptr")); 
+		return;
 	}
+
+	
+	
+	ControlledCharacter->Attack();
+	ControlledCharacter->Attack();
 }
 
-void AWildCardAIController::AttackDone()
+void AWildCardAIController::ActionDone()
 {
 	if (ControlledCharacter->Stamina <= 0.0f)
 	{
-		ControlledCharacter->OnAttackFinished.RemoveDynamic(this, &AWildCardAIController::AttackDone);
+		ControlledCharacter->OnAttackFinished.RemoveDynamic(this, &AWildCardAIController::ActionDone);
 		WildCardGameState->NextTurn();
 		return;
 	}
 
-	EnemyAttack();
+	Action();
 }

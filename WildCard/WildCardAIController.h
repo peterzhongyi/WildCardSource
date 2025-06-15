@@ -32,11 +32,10 @@ protected:
 
 	// Timer handle for behavior
 	FTimerHandle TimerHandle;
-
-	// Function called by timer to make enemy attack
+	
 	UFUNCTION()
-	void EnemyAttack();
+	void Action();
 
 	UFUNCTION()
-	void AttackDone();
+	void ActionDone();
 };
