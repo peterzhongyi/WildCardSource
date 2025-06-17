@@ -40,4 +40,6 @@ protected:
 	void ActionDone();
 
 	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
+
+	int ActionCounter = 0;
 };

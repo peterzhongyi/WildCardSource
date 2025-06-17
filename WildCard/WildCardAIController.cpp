@@ -49,6 +49,7 @@ void AWildCardAIController::OnPossess(APawn* InPawn)
 
 void AWildCardAIController::Action()
 {
+	ActionCounter++;
 	if (ControlledCharacter == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("EnemyAttack - ControlledCharacter is nullptr")); 
@@ -63,13 +64,15 @@ void AWildCardAIController::Action()
 	}
 
 	float DistanceToPlayer = FVector::Dist(ControlledCharacter->GetActorLocation(), PlayerCharacter->GetActorLocation());
-	float AttackRange = 250.0f; // Adjust this value as needed
+	float AttackRange = 200.0f; // Adjust this value as needed
 
 	if (DistanceToPlayer > AttackRange)
 	{
 		// Move towards player
 		UE_LOG(LogTemp, Warning, TEXT("Moving towards player, distance: %f"), DistanceToPlayer);
-		MoveToActor(PlayerCharacter); // Stop a bit short of attack range
+		// There might be a bug with UE on the acceptance radius. 0.8f will let enemy stops outside of attackrange,
+		// resulting in an endless Action loop
+		MoveToLocation(PlayerCharacter->GetActorLocation(), AttackRange * 0.5f);
 	}
 	else
 	{
@@ -80,8 +83,9 @@ void AWildCardAIController::Action()
 
 void AWildCardAIController::ActionDone()
 {
-	if (ControlledCharacter->Stamina <= 0.0f)
+	if (ControlledCharacter->Stamina <= 0.0f || ActionCounter > 20)
 	{
+		ActionCounter = 0;
 		ControlledCharacter->OnAttackFinished.RemoveDynamic(this, &AWildCardAIController::ActionDone);
 		WildCardGameState->NextTurn();
 		return;
