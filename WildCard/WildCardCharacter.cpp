@@ -165,6 +165,44 @@ void AWildCardCharacter::Tick(float DeltaTime)
 		FRotator ControlRotation = Controller->GetControlRotation();
 		FRotator NewRotation = FRotator(0, ControlRotation.Yaw, 0);
 		SetActorRotation(NewRotation);
+
+		// Update trajectory while aiming jump
+		if (bIsPreparingJump)
+		{
+			CalculateJumpTrajectory();
+		}
+	}
+
+	// Debug visualization
+	if (bIsPreparingJump && TrajectoryResult.PathData.Num() > 1)
+	{
+		for (int32 i = 0; i < TrajectoryResult.PathData.Num() - 1; i++)
+		{
+			DrawDebugLine(
+				GetWorld(),
+				TrajectoryResult.PathData[i].Location,
+				TrajectoryResult.PathData[i + 1].Location,
+				FColor::Yellow,
+				false,
+				-1.0f,
+				0,
+				3.0f
+			);
+		}
+        
+		// Draw hit point if we hit something
+		if (TrajectoryResult.HitResult.bBlockingHit)
+		{
+			DrawDebugSphere(
+				GetWorld(),
+				TrajectoryResult.HitResult.Location,
+				20.0f,
+				12,
+				FColor::Red,
+				false,
+				-1.0f
+			);
+		}
 	}
 }
 
@@ -549,6 +587,44 @@ TArray<FVector> AWildCardCharacter::GetUniformNavMeshPoints(FVector TargetPoint,
 	}
     
 	return UniformPoints;
+}
+
+void AWildCardCharacter::CalculateJumpTrajectory()
+{
+	if (!Controller)
+		return;
+    
+	// Get launch parameters
+	FVector StartLocation = GetActorLocation();
+	FVector LaunchDirection = Controller->GetControlRotation().Vector();
+	FVector LaunchVelocity = LaunchDirection * JumpSpeed;
+    
+	// Set up prediction parameters
+	FPredictProjectilePathParams PredictParams;
+	PredictParams.StartLocation = StartLocation;
+	PredictParams.LaunchVelocity = LaunchVelocity;
+	PredictParams.MaxSimTime = MaxSimTime;
+	PredictParams.ProjectileRadius = ProjectileRadius;
+	PredictParams.ActorsToIgnore.Add(this);
+	PredictParams.DrawDebugTime = 0.0f; // Set to > 0 for debug visualization
+    
+	// Predict the path
+	bool bHit = UGameplayStatics::PredictProjectilePath(
+		GetWorld(),
+		PredictParams,
+		TrajectoryResult
+	);
+    
+	if (bHit)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Predicted landing at: %s"), 
+			   *TrajectoryResult.HitResult.Location.ToString());
+	}
+}
+
+void AWildCardCharacter::ClearTrajectory()
+{
+	TrajectoryResult = FPredictProjectilePathResult();
 }
 
 

@@ -9,6 +9,7 @@
 #include "SummonStone.h"
 #include "WildCardUserWidget.h"
 #include "Components/WidgetComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "WildCardCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChangedDelegate, float, NewStamina);
@@ -150,6 +151,21 @@ protected:
 	TArray<FVector> GetValidProjectileLaunchPoints(FVector TargetPoint, float InitialSpeed, float Gravity);
 	TArray<FVector> GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing = 200.0f);
 
+	// In protected section:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
+	float ProjectileRadius = 5.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
+	float MaxSimTime = 4.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
+	float ProjectileGravityScale = 1.0f;
+
+	// Store the prediction result
+	FPredictProjectilePathResult TrajectoryResult;
+
+	void CalculateJumpTrajectory();
+	void ClearTrajectory();
 	
 public:
 	/** Returns CameraBoom subobject **/
