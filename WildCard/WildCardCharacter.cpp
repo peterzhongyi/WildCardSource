@@ -160,7 +160,7 @@ void AWildCardCharacter::Tick(float DeltaTime)
         PreviousLocation = CurrentLocation;
     }
 
-	if (bIsPreparingAttack && Controller)
+	if ((bIsPreparingAttack || bIsPreparingJump) && Controller)
 	{
 		FRotator ControlRotation = Controller->GetControlRotation();
 		FRotator NewRotation = FRotator(0, ControlRotation.Yaw, 0);
@@ -208,6 +208,12 @@ void AWildCardCharacter::Move(const FInputActionValue& Value)
 	if (bIsPreparingAttack)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Can't move, is preparing attack"));
+		return;
+	}
+
+	if (bIsPreparingJump)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't move, is preparing jump"));
 		return;
 	}
 	
@@ -469,6 +475,35 @@ FRotator AWildCardCharacter::GetLowerArcDirection(FVector StartPoint, FVector Ta
 	}
     
 	return OutRotation;
+}
+
+void AWildCardCharacter::Jump()
+{
+	if (!InTurn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't Jump, not in turn"));
+		return;
+	}
+    
+	if (!bIsPreparingJump)
+	{
+		// Enter prepare jump state
+		bIsPreparingJump = true;
+		UE_LOG(LogTemp, Warning, TEXT("Entering prepare jump state"));
+		return;
+	}
+    
+	// Execute the jump
+	if (Controller)
+	{
+		FVector LaunchDirection = GetControlRotation().Vector();
+		LaunchCharacter(LaunchDirection * JumpSpeed, false, false);
+        
+		float NewStamina = FMath::Max(0.0f, Stamina - 20.0f);
+		UpdateStamina(NewStamina);
+	}
+    
+	bIsPreparingJump = false;
 }
 
 TArray<FVector> AWildCardCharacter::GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing)

@@ -94,8 +94,8 @@ void AWildCardPlayerController::SetupInputComponent()
     if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
     {
         UE_LOG(LogTemp, Warning, TEXT("Binding Actions"));
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AWildCardPlayerController::HandleJump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleStopJumping);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleJump);
+		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleStopJumping);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AWildCardPlayerController::HandleMove);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWildCardPlayerController::HandleLook);
         EnhancedInputComponent->BindAction(SwitchTurnAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleSwitchTurn);

@@ -104,6 +104,9 @@ public:
 	void Summon();
 
 	FRotator GetLowerArcDirection(FVector StartPoint, FVector TargetPoint, float InitialSpeed, float Gravity);
+
+	// In public section, modify the existing Jump declaration or add:
+	virtual void Jump() override;
 	
 protected:	
 	// To add mapping context
@@ -137,6 +140,12 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsPreparingAttack;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	bool bIsPreparingJump;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
+	float JumpSpeed = 800.0f;
 
 	TArray<FVector> GetValidProjectileLaunchPoints(FVector TargetPoint, float InitialSpeed, float Gravity);
 	TArray<FVector> GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing = 200.0f);
