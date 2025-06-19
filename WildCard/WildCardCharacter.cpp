@@ -552,7 +552,7 @@ void AWildCardCharacter::Jump()
 	
 	bIsPreparingJump = false;
 	ClearTrajectory();
-	SetJumpCamera(true); // Adjust camera for aiming
+	SetJumpCamera(false);
 }
 
 TArray<FVector> AWildCardCharacter::GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing)
