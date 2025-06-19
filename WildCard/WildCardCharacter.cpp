@@ -99,6 +99,10 @@ AWildCardCharacter::AWildCardCharacter()
 	GreatswordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Greatsword"));
 	GreatswordMesh->SetupAttachment(GetMesh(), FName(TEXT("hand_l")));
 	GreatswordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Store original camera settings (do this after CameraBoom is created)
+	OriginalCameraArmLength = CameraBoom->TargetArmLength;
+	OriginalCameraOffset = CameraBoom->SocketOffset;
 }
 
 void AWildCardCharacter::BeginPlay()
@@ -152,9 +156,6 @@ void AWildCardCharacter::Tick(float DeltaTime)
         float StaminaDecrease = DistanceMoved * StaminaPerUnitDistance;
 		float NewStamina = FMath::Max(0.0f, Stamina - StaminaDecrease);
         UpdateStamina(NewStamina);
-        
-        // Optional: Log stamina for debugging
-        // UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Stamina: %f"), DistanceMoved, Stamina);
         
         // Update previous location
         PreviousLocation = CurrentLocation;
@@ -330,14 +331,9 @@ void AWildCardCharacter::FireBall()
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Calling FireBall"));
 	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
-	UE_LOG(LogTemp, Warning, TEXT("Location --- %s"), *Location.ToString());
 	FVector TargetLocation = FVector(1000.0, 1000.0, 50.0);
-	UE_LOG(LogTemp, Warning, TEXT("TargetLocation --- %s"), *TargetLocation.ToString());
 	float InitialSpeed = ProjectileClass->GetDefaultObject<AProjectile>()->ProjectileMovementComponent->InitialSpeed;
-	UE_LOG(LogTemp, Warning, TEXT("Initial Speed --- %f"), InitialSpeed);
-	UE_LOG(LogTemp, Warning, TEXT("CharacterGravity --- %f"), CharacterGravity);
 	FRotator RotationVector = GetLowerArcDirection(Location, TargetLocation, InitialSpeed, CharacterGravity);
-	UE_LOG(LogTemp, Warning, TEXT("RotationVector --- %s"), *RotationVector.ToString());
 
 	TArray<FVector> potential_points = GetUniformNavMeshPoints(TargetLocation, InitialSpeed, CharacterGravity, 100.0);
 	// for (const FVector& Point : potential_points)
@@ -359,12 +355,13 @@ void AWildCardCharacter::FireBall()
 
 void AWildCardCharacter::Attack()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Calling Attack"));
+	
 	if (!InTurn)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Can't Attack, not in turn"));
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Calling Attack"));
 	if (!bIsPreparingAttack)
 	{
 		// Enter prepare attack state
@@ -414,6 +411,12 @@ void AWildCardCharacter::Cancel()
 	if (bIsPreparingAttack)
 	{
 		bIsPreparingAttack = false;
+	}
+	if (bIsPreparingJump)
+	{
+		bIsPreparingJump = false;
+		ClearTrajectory(); // Hide trajectory when canceling
+		SetJumpCamera(false); // Reset camera
 	}
 }
 
@@ -527,21 +530,29 @@ void AWildCardCharacter::Jump()
 	{
 		// Enter prepare jump state
 		bIsPreparingJump = true;
+		CalculateJumpTrajectory();
+		SetJumpCamera(true); // Adjust camera for aiming
 		UE_LOG(LogTemp, Warning, TEXT("Entering prepare jump state"));
 		return;
 	}
     
 	// Execute the jump
-	if (Controller)
+	if (!Controller)
 	{
-		FVector LaunchDirection = GetControlRotation().Vector();
-		LaunchCharacter(LaunchDirection * JumpSpeed, false, false);
-        
-		float NewStamina = FMath::Max(0.0f, Stamina - 20.0f);
-		UpdateStamina(NewStamina);
+		return;
 	}
+	
+	FRotator ControlRotation = Controller->GetControlRotation();
+	ControlRotation.Pitch = ControlRotation.Pitch * 2.0 + 45.0;
+	FVector LaunchDirection = ControlRotation.Vector();
+	LaunchCharacter(LaunchDirection * JumpSpeed, false, false);
     
+	float NewStamina = FMath::Max(0.0f, Stamina - 20.0f);
+	UpdateStamina(NewStamina);
+	
 	bIsPreparingJump = false;
+	ClearTrajectory();
+	SetJumpCamera(true); // Adjust camera for aiming
 }
 
 TArray<FVector> AWildCardCharacter::GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing)
@@ -595,8 +606,14 @@ void AWildCardCharacter::CalculateJumpTrajectory()
 		return;
     
 	// Get launch parameters
-	FVector StartLocation = GetActorLocation();
-	FVector LaunchDirection = Controller->GetControlRotation().Vector();
+	FVector ActorLocation = GetActorLocation();  // Center of capsule (pelvis level)
+	float CapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	FVector StartLocation = ActorLocation - FVector(0, 0, CapsuleHalfHeight);  // Bottom of capsule (feet level)
+
+	FRotator ControlRotation = Controller->GetControlRotation();
+	ControlRotation.Pitch = ControlRotation.Pitch * 2.0 + 45.0;
+	FVector LaunchDirection = ControlRotation.Vector();
+	
 	FVector LaunchVelocity = LaunchDirection * JumpSpeed;
     
 	// Set up prediction parameters
@@ -604,7 +621,7 @@ void AWildCardCharacter::CalculateJumpTrajectory()
 	PredictParams.StartLocation = StartLocation;
 	PredictParams.LaunchVelocity = LaunchVelocity;
 	PredictParams.MaxSimTime = MaxSimTime;
-	PredictParams.ProjectileRadius = ProjectileRadius;
+	PredictParams.ProjectileRadius = 0;
 	PredictParams.ActorsToIgnore.Add(this);
 	PredictParams.DrawDebugTime = 0.0f; // Set to > 0 for debug visualization
     
@@ -625,6 +642,25 @@ void AWildCardCharacter::CalculateJumpTrajectory()
 void AWildCardCharacter::ClearTrajectory()
 {
 	TrajectoryResult = FPredictProjectilePathResult();
+}
+
+void AWildCardCharacter::SetJumpCamera(bool bEnableJumpCamera)
+{
+	if (!CameraBoom)
+		return;
+        
+	if (bEnableJumpCamera)
+	{
+		// Move camera to the right and zoom in for better arc visibility
+		CameraBoom->SocketOffset = FVector(0, JumpCameraOffset, 0); // Move right
+		CameraBoom->TargetArmLength = JumpCameraArmLength; // Zoom closer
+	}
+	else
+	{
+		// Reset to original camera settings
+		CameraBoom->SocketOffset = OriginalCameraOffset;
+		CameraBoom->TargetArmLength = OriginalCameraArmLength;
+	}
 }
 
 

@@ -95,13 +95,9 @@ public:
 	float GetHealth();
 
 	void FireBall();
-
 	void Attack();
-
 	void Hit();
-
 	void Cancel();
-
 	void Summon();
 
 	FRotator GetLowerArcDirection(FVector StartPoint, FVector TargetPoint, float InitialSpeed, float Gravity);
@@ -166,6 +162,22 @@ protected:
 
 	void CalculateJumpTrajectory();
 	void ClearTrajectory();
+
+	// In protected section:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump Camera")
+	float JumpCameraOffset = 100.0f; // How far right to move camera
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump Camera")
+	float JumpCameraArmLength = 250.0f; // Closer zoom distance
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump Camera")
+	float CameraTransitionSpeed = 5.0f; // How fast to transition
+
+	// Store original camera settings
+	float OriginalCameraArmLength;
+	FVector OriginalCameraOffset;
+
+	void SetJumpCamera(bool bEnableJumpCamera);
 	
 public:
 	/** Returns CameraBoom subobject **/
