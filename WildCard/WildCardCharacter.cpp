@@ -620,10 +620,18 @@ void AWildCardCharacter::CalculateJumpTrajectory()
 	FPredictProjectilePathParams PredictParams;
 	PredictParams.StartLocation = StartLocation;
 	PredictParams.LaunchVelocity = LaunchVelocity;
+	PredictParams.bTraceWithCollision = true;
 	PredictParams.MaxSimTime = MaxSimTime;
-	PredictParams.ProjectileRadius = 0;
+	PredictParams.ProjectileRadius = 5.0f; // Use actual radius instead of 0
+	PredictParams.bTraceComplex = false;   // Use simple collision
 	PredictParams.ActorsToIgnore.Add(this);
 	PredictParams.DrawDebugTime = 0.0f; // Set to > 0 for debug visualization
+
+	// Add collision detection
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));  // Ground/walls
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));        // Characters
+	PredictParams.ObjectTypes = ObjectTypes;
     
 	// Predict the path
 	bool bHit = UGameplayStatics::PredictProjectilePath(
@@ -631,12 +639,6 @@ void AWildCardCharacter::CalculateJumpTrajectory()
 		PredictParams,
 		TrajectoryResult
 	);
-    
-	if (bHit)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Predicted landing at: %s"), 
-			   *TrajectoryResult.HitResult.Location.ToString());
-	}
 }
 
 void AWildCardCharacter::ClearTrajectory()
