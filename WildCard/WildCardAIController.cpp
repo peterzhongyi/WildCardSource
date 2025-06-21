@@ -63,11 +63,61 @@ void AWildCardAIController::Action()
 		return;
 	}
 
-	float DistanceToPlayer = FVector::Dist(ControlledCharacter->GetActorLocation(), PlayerCharacter->GetActorLocation());
+	FVector EnemyLocation = ControlledCharacter->GetActorLocation();
+	FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+	float DistanceToPlayer = FVector::Dist(PlayerLocation, EnemyLocation);
 	float AttackRange = 200.0f; // Adjust this value as needed
 
 	if (DistanceToPlayer > AttackRange)
 	{
+		// Jump to player
+		ControlledCharacter->JumpSpeed;
+
+		TArray<FVector> potential_points = ControlledCharacter->GetUniformNavMeshPoints(
+			PlayerLocation,
+			ControlledCharacter->JumpSpeed,
+			ControlledCharacter->CharacterGravity,
+			100.0);
+
+		FVector BestLocation = EnemyLocation;
+		float BestDistance = DistanceToPlayer;
+		for (const FVector& Point : potential_points)
+		{
+			DrawDebugSphere(
+				GetWorld(),
+				Point,
+				10.0f,           // Radius
+				4,              // Segments
+				FColor::Red,     // Color
+				false,           // Persistent lines
+				50.0f             // Lifetime in seconds
+			);
+
+			float Distance = FVector::Dist(Point, PlayerLocation);
+			if (Distance < BestDistance)
+			{
+				BestLocation = Point;
+				BestDistance = Distance;
+			}
+		}
+
+		DrawDebugSphere(
+			GetWorld(),
+			BestLocation,
+			10.0f,           // Radius
+			4,              // Segments
+			FColor::Green,     // Color
+			false,           // Persistent lines
+			50.0f             // Lifetime in second
+		);
+
+		FRotator JumpAngle = ControlledCharacter->GetLowerArcDirection(EnemyLocation, PlayerLocation,
+			ControlledCharacter->JumpSpeed, ControlledCharacter->CharacterGravity);
+
+		FVector JumpDirection = JumpAngle.Vector();
+		ControlledCharacter->LaunchCharacter(JumpDirection * ControlledCharacter->JumpSpeed, false, false);
+
+		
 		// Move towards player
 		UE_LOG(LogTemp, Warning, TEXT("Moving towards player, distance: %f"), DistanceToPlayer);
 		// There might be a bug with UE on the acceptance radius. 0.8f will let enemy stops outside of attackrange,

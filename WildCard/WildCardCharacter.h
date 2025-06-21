@@ -81,7 +81,7 @@ public:
 	bool InTurn = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
-	float CharacterGravity = 0.0;
+	float CharacterGravity = 980.0;
 
 	UPROPERTY()
 	FVector PreviousLocation;
@@ -100,10 +100,19 @@ public:
 	void Cancel();
 	void Summon();
 
+	TArray<FVector> GetValidProjectileLaunchPoints(FVector TargetPoint, float InitialSpeed, float Gravity);
+	TArray<FVector> GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing = 200.0f);
+
 	FRotator GetLowerArcDirection(FVector StartPoint, FVector TargetPoint, float InitialSpeed, float Gravity);
 
 	// In public section, modify the existing Jump declaration or add:
 	virtual void Jump() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
+	float JumpSpeed = 1000.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
+	float GravityScale = 1.0f;
 	
 protected:	
 	// To add mapping context
@@ -144,14 +153,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsPreparingJump;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
-	float JumpSpeed = 1000.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
-	float GravityScale = 1.0f;
-
-	TArray<FVector> GetValidProjectileLaunchPoints(FVector TargetPoint, float InitialSpeed, float Gravity);
-	TArray<FVector> GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing = 200.0f);
+	
 
 	// In protected section:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
