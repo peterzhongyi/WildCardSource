@@ -110,6 +110,9 @@ protected:
 	virtual void BeginPlay();
 
 	virtual void Tick(float DeltaTime) override;
+
+	// In WildCardCharacter.h, add this to the protected section:
+	virtual void Landed(const FHitResult& Hit) override;
 	
 	TSubclassOf<AProjectile> ProjectileClass;
 	TSubclassOf<ASummonStone> SummonStoneClass;
@@ -142,7 +145,10 @@ protected:
 	bool bIsPreparingJump;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
-	float JumpSpeed = 800.0f;
+	float JumpSpeed = 1000.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
+	float GravityScale = 1.0f;
 
 	TArray<FVector> GetValidProjectileLaunchPoints(FVector TargetPoint, float InitialSpeed, float Gravity);
 	TArray<FVector> GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing = 200.0f);
@@ -168,7 +174,7 @@ protected:
 	float JumpCameraOffset = 100.0f; // How far right to move camera
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump Camera")
-	float JumpCameraArmLength = 250.0f; // Closer zoom distance
+	float JumpCameraArmLength = 400.0f; // Closer zoom distance
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump Camera")
 	float CameraTransitionSpeed = 5.0f; // How fast to transition

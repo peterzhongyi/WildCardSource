@@ -44,6 +44,7 @@ AWildCardCharacter::AWildCardCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = 380.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+	GetCharacterMovement()->GravityScale = GravityScale;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -59,7 +60,7 @@ AWildCardCharacter::AWildCardCharacter()
 	// Set up initial character stats
 	MaxStamina = 100.0f;
     Stamina = MaxStamina;
-    StaminaPerUnitDistance = 0.03f; // Adjust this to change stamina consumption rate
+    StaminaPerUnitDistance = 0.025f; // Adjust this to change stamina consumption rate
 	MaxHealth = 100.0f;
 	Health = MaxHealth;
 
@@ -142,24 +143,32 @@ void AWildCardCharacter::BeginPlay()
 void AWildCardCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+	
     
-    // Get current location
-    FVector CurrentLocation = GetActorLocation();
-    
-    // Calculate distance moved since last tick (in Unreal units)
-    float DistanceMoved = FVector::Dist2D(CurrentLocation, PreviousLocation);
-    
-    // Only consume stamina if we've moved a meaningful distance
-    if (DistanceMoved > 1.0f)
-    {
-        // Decrease stamina based on distance moved
-        float StaminaDecrease = DistanceMoved * StaminaPerUnitDistance;
-		float NewStamina = FMath::Max(0.0f, Stamina - StaminaDecrease);
-        UpdateStamina(NewStamina);
+	// Only process stamina and update location if we're on the ground
+	if (GetCharacterMovement()->IsMovingOnGround())
+	{
+		// Get current location
+		FVector CurrentLocation = GetActorLocation();
+		
+		// Calculate distance moved since last tick (in Unreal units)
+		float DistanceMoved = FVector::Dist2D(CurrentLocation, PreviousLocation);
         
-        // Update previous location
-        PreviousLocation = CurrentLocation;
-    }
+		// Only consume stamina if we've moved a meaningful distance
+		if (DistanceMoved > 1.0f)
+		{
+			// Decrease stamina based on distance moved
+			float StaminaDecrease = DistanceMoved * StaminaPerUnitDistance;
+			float NewStamina = FMath::Max(0.0f, Stamina - StaminaDecrease);
+			UpdateStamina(NewStamina);
+			UE_LOG(LogTemp, Warning, TEXT("Update stamina to %f"), NewStamina);
+		}
+
+		PreviousLocation = CurrentLocation;
+	}
+
+	
 
 	if ((bIsPreparingAttack || bIsPreparingJump) && Controller)
 	{
@@ -205,6 +214,17 @@ void AWildCardCharacter::Tick(float DeltaTime)
 			);
 		}
 	}
+}
+
+void AWildCardCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	// Immediately stop all horizontal movement
+	UE_LOG(LogTemp, Warning, TEXT("Landed"));
+	GetCharacterMovement()->StopMovementImmediately();
+
+	PreviousLocation = GetActorLocation();
 }
 
 void AWildCardCharacter::UpdateStamina(float NewStamina)
@@ -608,8 +628,8 @@ void AWildCardCharacter::CalculateJumpTrajectory()
 	// Get launch parameters
 	FVector ActorLocation = GetActorLocation();  // Center of capsule (pelvis level)
 	float CapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-	FVector StartLocation = ActorLocation - FVector(0, 0, CapsuleHalfHeight);  // Bottom of capsule (feet level)
-
+	FVector StartLocation = ActorLocation - FVector(0, 0, CapsuleHalfHeight * 0.99);  // Bottom of capsule (feet level)
+	
 	FRotator ControlRotation = Controller->GetControlRotation();
 	ControlRotation.Pitch = ControlRotation.Pitch * 2.0 + 45.0;
 	FVector LaunchDirection = ControlRotation.Vector();
@@ -622,7 +642,7 @@ void AWildCardCharacter::CalculateJumpTrajectory()
 	PredictParams.LaunchVelocity = LaunchVelocity;
 	PredictParams.bTraceWithCollision = true;
 	PredictParams.MaxSimTime = MaxSimTime;
-	PredictParams.ProjectileRadius = 5.0f; // Use actual radius instead of 0
+	PredictParams.ProjectileRadius = 0.1f; // Use actual radius instead of 0
 	PredictParams.bTraceComplex = false;   // Use simple collision
 	PredictParams.ActorsToIgnore.Add(this);
 	PredictParams.DrawDebugTime = 0.0f; // Set to > 0 for debug visualization
