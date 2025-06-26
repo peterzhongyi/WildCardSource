@@ -3,6 +3,7 @@
 
 #include "WildCardAIController.h"
 
+#include "NavigationSystem.h"
 #include "WildCardGameState.h"
 
 AWildCardAIController::AWildCardAIController()
@@ -78,7 +79,7 @@ void AWildCardAIController::Action()
 	
 	// Pick a skill to cast - just attack, at the moment
 	float DistanceToPlayer = FVector::Dist(PlayerLocation, EnemyLocation);
-	float AttackRange = 400.0f; // Adjust this value as needed
+	float AttackRange = 300.0f; // Adjust this value as needed
 	if (DistanceToPlayer <= AttackRange)
 	{
 		ControlledCharacter->Attack();
@@ -142,6 +143,15 @@ void AWildCardAIController::Action()
 	
 	// Move towards player
 	UE_LOG(LogTemp, Warning, TEXT("Moving towards player, distance: %f"), DistanceToPlayer);
+	double PathLength = 0.0;
+	UNavigationSystemV1::GetPathLength(GetWorld(), 
+	GetPawn()->GetActorLocation(), 
+	BestLocation, PathLength);
+
+	if (PathLength > 0.0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Path length to destination: %f"), PathLength);
+	}
 	MoveToLocation(BestLocation, -1.0f, false);
 }
 
