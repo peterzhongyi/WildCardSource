@@ -113,6 +113,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
 	float GravityScale = 1.0f;
+
+	bool CalculateProjectileLaunchRotation(
+		const FVector& StartPoint,
+		const FVector& TargetPoint,
+		float InitialSpeed,
+		float Gravity, 
+		FRotator& OutRotation);
 	
 protected:	
 	// To add mapping context

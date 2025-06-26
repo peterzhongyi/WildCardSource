@@ -225,6 +225,11 @@ void AWildCardCharacter::Landed(const FHitResult& Hit)
 	GetCharacterMovement()->StopMovementImmediately();
 
 	PreviousLocation = GetActorLocation();
+
+	if (IsEnemy && InTurn)
+	{
+		OnActionDone.Broadcast();
+	}
 }
 
 void AWildCardCharacter::UpdateStamina(float NewStamina)
@@ -454,12 +459,11 @@ void AWildCardCharacter::Summon()
 	SummonStone->SetOwner(this);
 }
 
-bool CalculateProjectileLaunchRotation(
+bool AWildCardCharacter::CalculateProjectileLaunchRotation(
     const FVector& StartPoint,
     const FVector& TargetPoint,
     float InitialSpeed,
     float Gravity,
-    bool bHighArc,
     FRotator& OutRotation)
 {
 	// Calculate displacement vector
@@ -526,7 +530,7 @@ FRotator AWildCardCharacter::GetLowerArcDirection(FVector StartPoint, FVector Ta
 {
 	FRotator OutRotation;
 	bool bSuccess = CalculateProjectileLaunchRotation(
-		StartPoint, TargetPoint, InitialSpeed, Gravity, false, OutRotation);
+		StartPoint, TargetPoint, InitialSpeed, Gravity, OutRotation);
     
 	if (!bSuccess)
 	{
