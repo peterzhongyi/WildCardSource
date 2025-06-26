@@ -339,7 +339,7 @@ void AWildCardCharacter::DisableSwordCollision()
 void AWildCardCharacter::AttackEnded()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Broadcasting AttackEnded event"));
-	OnAttackFinished.Broadcast();
+	OnActionDone.Broadcast();
 }
 
 void AWildCardCharacter::FireBall()
@@ -355,7 +355,7 @@ void AWildCardCharacter::FireBall()
 	float InitialSpeed = ProjectileClass->GetDefaultObject<AProjectile>()->ProjectileMovementComponent->InitialSpeed;
 	FRotator RotationVector = GetLowerArcDirection(Location, TargetLocation, InitialSpeed, CharacterGravity);
 
-	TArray<FVector> potential_points = GetUniformNavMeshPoints(TargetLocation, InitialSpeed, CharacterGravity, 100.0);
+	// TArray<FVector> potential_points = GetUniformNavMeshPoints(100.0);
 	// for (const FVector& Point : potential_points)
 	// {
 	// 	DrawDebugSphere(
@@ -575,7 +575,7 @@ void AWildCardCharacter::Jump()
 	SetJumpCamera(false);
 }
 
-TArray<FVector> AWildCardCharacter::GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing)
+TArray<FVector> AWildCardCharacter::GetUniformNavMeshPoints(float GridSpacing)
 {
 	TArray<FVector> UniformPoints;
     
@@ -608,11 +608,12 @@ TArray<FVector> AWildCardCharacter::GetUniformNavMeshPoints(FVector TargetPoint,
 			FNavLocation NavLocation;
 			if (NavSys->ProjectPointToNavigation(TestPoint, NavLocation, FVector(100.0f, 100.0f, 1000000.0f)))
 			{
-				FRotator OutRotation;
-				if (CalculateProjectileLaunchRotation(NavLocation.Location + FVector(0, 0, SpawnPointOffset), TargetPoint, InitialSpeed, Gravity, false, OutRotation))
-				{
-					UniformPoints.Add(NavLocation.Location);
-				} 
+				// FRotator OutRotation;
+				// if (CalculateProjectileLaunchRotation(NavLocation.Location + FVector(0, 0, SpawnPointOffset), TargetPoint, InitialSpeed, Gravity, false, OutRotation))
+				// {
+				// 	UniformPoints.Add(NavLocation.Location);
+				// }
+				UniformPoints.Add(NavLocation.Location);
 			}
 		}
 	}

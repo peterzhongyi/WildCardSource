@@ -19,8 +19,8 @@ void AWildCardAIController::BeginTurn()
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Begin turn for %s"), *ControlledCharacter->GetName());
 
-	// Bind to attack finished delegate
-	ControlledCharacter->OnAttackFinished.AddDynamic(this, &AWildCardAIController::ActionDone);
+	// Actions can trigger future actions
+	ControlledCharacter->OnActionDone.AddDynamic(this, &AWildCardAIController::Action);
 	
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AWildCardAIController::Action, 2.0f, false);
 }
@@ -49,10 +49,20 @@ void AWildCardAIController::OnPossess(APawn* InPawn)
 
 void AWildCardAIController::Action()
 {
+	// Increase counter to prevent infinite loops.
 	ActionCounter++;
+	
 	if (ControlledCharacter == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("EnemyAttack - ControlledCharacter is nullptr")); 
+		return;
+	}
+
+	if (ControlledCharacter->Stamina <= 0.0f || ActionCounter > 20)
+	{
+		ActionCounter = 0;
+		ControlledCharacter->OnActionDone.RemoveDynamic(this, &AWildCardAIController::Action);
+		WildCardGameState->NextTurn();
 		return;
 	}
 
@@ -65,83 +75,74 @@ void AWildCardAIController::Action()
 
 	FVector EnemyLocation = ControlledCharacter->GetActorLocation();
 	FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+	
+	// Pick a skill to cast - just attack, at the moment
 	float DistanceToPlayer = FVector::Dist(PlayerLocation, EnemyLocation);
-	float AttackRange = 200.0f; // Adjust this value as needed
-
-	if (DistanceToPlayer > AttackRange)
+	float AttackRange = 400.0f; // Adjust this value as needed
+	if (DistanceToPlayer <= AttackRange)
 	{
-		// Jump to player
-		ControlledCharacter->JumpSpeed;
+		ControlledCharacter->Attack();
+		ControlledCharacter->Attack();
+		return;
+	}
+	
+	// Find location to cast skill.
+	TArray<FVector> NavMeshPoints = ControlledCharacter->GetUniformNavMeshPoints(100.0);
 
-		TArray<FVector> potential_points = ControlledCharacter->GetUniformNavMeshPoints(
-			PlayerLocation,
-			ControlledCharacter->JumpSpeed,
-			ControlledCharacter->CharacterGravity,
-			100.0);
-
-		FVector BestLocation = EnemyLocation;
-		float BestDistance = DistanceToPlayer;
-		for (const FVector& Point : potential_points)
+	FVector BestLocation = EnemyLocation;
+	float BestDistance = DistanceToPlayer;
+	for (const FVector& Point : NavMeshPoints)
+	{
+		DrawDebugSphere(
+			GetWorld(),
+			Point,
+			10.0f,           // Radius
+			4,              // Segments
+			FColor::Red,     // Color
+			false,           // Persistent lines
+			50.0f             // Lifetime in seconds
+		);
+		
+		// TODO: add method to validate Point beyond just checking DistanceToPlayer
+		if (FVector::Dist(Point, PlayerLocation) <= AttackRange)
 		{
 			DrawDebugSphere(
 				GetWorld(),
 				Point,
 				10.0f,           // Radius
 				4,              // Segments
-				FColor::Red,     // Color
+				FColor::Yellow,     // Color
 				false,           // Persistent lines
 				50.0f             // Lifetime in seconds
 			);
-
-			float Distance = FVector::Dist(Point, PlayerLocation);
-			if (Distance < BestDistance)
+			if (FVector::Dist(Point, EnemyLocation) < BestDistance)
 			{
 				BestLocation = Point;
-				BestDistance = Distance;
+				BestDistance = FVector::Dist(Point, EnemyLocation);
 			}
 		}
-
-		DrawDebugSphere(
-			GetWorld(),
-			BestLocation,
-			10.0f,           // Radius
-			4,              // Segments
-			FColor::Green,     // Color
-			false,           // Persistent lines
-			50.0f             // Lifetime in second
-		);
-
-		FRotator JumpAngle = ControlledCharacter->GetLowerArcDirection(EnemyLocation, PlayerLocation,
-			ControlledCharacter->JumpSpeed, ControlledCharacter->CharacterGravity);
-
-		FVector JumpDirection = JumpAngle.Vector();
-		ControlledCharacter->LaunchCharacter(JumpDirection * ControlledCharacter->JumpSpeed, false, false);
-
-		
-		// Move towards player
-		UE_LOG(LogTemp, Warning, TEXT("Moving towards player, distance: %f"), DistanceToPlayer);
-		// There might be a bug with UE on the acceptance radius. 0.8f will let enemy stops outside of attackrange,
-		// resulting in an endless Action loop
-		MoveToLocation(PlayerCharacter->GetActorLocation(), AttackRange * 0.5f);
-	}
-	else
-	{
-		ControlledCharacter->Attack();
-		ControlledCharacter->Attack();
-	}
-}
-
-void AWildCardAIController::ActionDone()
-{
-	if (ControlledCharacter->Stamina <= 0.0f || ActionCounter > 20)
-	{
-		ActionCounter = 0;
-		ControlledCharacter->OnAttackFinished.RemoveDynamic(this, &AWildCardAIController::ActionDone);
-		WildCardGameState->NextTurn();
-		return;
 	}
 
-	Action();
+	DrawDebugSphere(
+		GetWorld(),
+		BestLocation,
+		10.0f,           // Radius
+		4,              // Segments
+		FColor::Green,     // Color
+		false,           // Persistent lines
+		50.0f             // Lifetime in second
+	);
+	
+
+	// FRotator JumpAngle = ControlledCharacter->GetLowerArcDirection(EnemyLocation, PlayerLocation,
+	// 	ControlledCharacter->JumpSpeed, ControlledCharacter->CharacterGravity);
+
+	// FVector JumpDirection = JumpAngle.Vector();
+	// ControlledCharacter->LaunchCharacter(JumpDirection * ControlledCharacter->JumpSpeed, false, false);
+	
+	// Move towards player
+	UE_LOG(LogTemp, Warning, TEXT("Moving towards player, distance: %f"), DistanceToPlayer);
+	MoveToLocation(BestLocation, -1.0f, false);
 }
 
 void AWildCardAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
@@ -150,5 +151,5 @@ void AWildCardAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathF
 	
 	// After movement is complete, mark action as done
 	UE_LOG(LogTemp, Warning, TEXT("OnMoveCompleted called"));
-	ActionDone();
+	Action();
 }

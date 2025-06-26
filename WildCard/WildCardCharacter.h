@@ -14,7 +14,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChangedDelegate, float, NewStamina);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChangedDelegate, float, NewHealth);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackFinishedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActionDoneDelegate);
 
 UCLASS(config=Game)
 class AWildCardCharacter : public ACharacter
@@ -88,7 +88,7 @@ public:
 
 	FOnStaminaChangedDelegate OnStaminaChanged;
 	FOnHealthChangedDelegate OnHealthChanged;
-	FOnAttackFinishedDelegate OnAttackFinished;
+	FOnActionDoneDelegate OnActionDone;
 
 	void UpdateStamina(float NewStamina);
 	void UpdateHealth(float NewHealth);
@@ -101,7 +101,7 @@ public:
 	void Summon();
 
 	TArray<FVector> GetValidProjectileLaunchPoints(FVector TargetPoint, float InitialSpeed, float Gravity);
-	TArray<FVector> GetUniformNavMeshPoints(FVector TargetPoint, float InitialSpeed, float Gravity, float GridSpacing = 200.0f);
+	TArray<FVector> GetUniformNavMeshPoints(float GridSpacing = 200.0f);
 
 	FRotator GetLowerArcDirection(FVector StartPoint, FVector TargetPoint, float InitialSpeed, float Gravity);
 
