@@ -162,47 +162,47 @@ void AWildCardAIController::Action()
 	{
 		FVector JumpDirection = OutRotation.Vector();
 		ControlledCharacter->LaunchCharacter(JumpDirection * ControlledCharacter->JumpSpeed, false, false);
+		return;
 	}
 
-	// // Find all points from which jump can reach
-	// bool FoundMoveLocation = false;
-	// FVector BestMoveLocation = FVector::ZeroVector;
-	// float BestMoveDistance = FLT_MAX; // The closer to enemy, the better
-	//
-	// for (const FVector& Point : NavMeshPoints)
-	// {
-	// 	if (ControlledCharacter->CalculateProjectileLaunchRotation(Point, BestCastLocation,
-	// 		ControlledCharacter->JumpSpeed, ControlledCharacter->CharacterGravity, OutRotation))
-	// 	{
-	// 		// This is a valid location to jump from
-	// 		if (FVector::Dist(Point, EnemyLocation) < BestMoveDistance)
-	// 		{
-	// 			FoundMoveLocation = true;
-	// 			BestMoveLocation = Point;
-	// 			BestMoveDistance = FVector::Dist(Point, EnemyLocation);
-	// 		}
-	// 	}
-	// }
-	
-	
+	UE_LOG(LogTemp, Warning, TEXT("Action - can't directly jump to casting loc, moving!"));
 
-	// FRotator JumpAngle = ControlledCharacter->GetLowerArcDirection(EnemyLocation, PlayerLocation,
-	// 	ControlledCharacter->JumpSpeed, ControlledCharacter->CharacterGravity);
-
-	// FVector JumpDirection = JumpAngle.Vector();
-	// ControlledCharacter->LaunchCharacter(JumpDirection * ControlledCharacter->JumpSpeed, false, false);
+	// Find all points from which jump can reach
+	bool FoundMoveLocation = false;
+	FVector BestMoveLocation = FVector::ZeroVector;
+	float BestMoveDistance = FLT_MAX; // The closer to enemy, the better
 	
-	// // Move towards player
-	// UE_LOG(LogTemp, Warning, TEXT("Moving towards player, distance: %f"), DistanceToPlayer);
-	// double PathLength = 0.0;
-	// UNavigationSystemV1::GetPathLength(GetWorld(), GetPawn()->GetActorLocation(), 
-	// BestLocation, PathLength);
-	//
-	// if (PathLength > 0.0)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Path length to destination: %f"), PathLength);
-	// }
-	// MoveToLocation(BestLocation, -1.0f, false);
+	for (const FVector& Point : NavMeshPoints)
+	{
+		if (ControlledCharacter->CalculateProjectileLaunchRotation(Point, BestCastLocation,
+			ControlledCharacter->JumpSpeed, ControlledCharacter->CharacterGravity, OutRotation))
+		{
+			// This is a valid location to jump from
+			if (FVector::Dist(Point, EnemyLocation) < BestMoveDistance)
+			{
+				FoundMoveLocation = true;
+				BestMoveLocation = Point;
+				BestMoveDistance = FVector::Dist(Point, EnemyLocation);
+			}
+		}
+	}
+
+	if (!FoundMoveLocation)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Action - no moving loc found!"));
+		return;
+	}
+	
+	// Move towards player
+	UE_LOG(LogTemp, Warning, TEXT("Moving towards move location %s"), *BestMoveLocation.ToString());
+	double PathLength = 0.0;
+	UNavigationSystemV1::GetPathLength(GetWorld(), EnemyLocation, BestMoveLocation, PathLength);
+	
+	if (PathLength > 0.0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Path length to destination: %f"), PathLength);
+	}
+	MoveToLocation(BestMoveLocation, -1.0f, false);
 }
 
 void AWildCardAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)

@@ -490,7 +490,7 @@ bool AWildCardCharacter::CalculateProjectileLaunchRotation(
 	// Check if solution exists
 	if (discriminant < 0.0f)
 	{
-		UE_LOG(LogTemp, Error, TEXT("discriminant is less than 0!"));
+		// UE_LOG(LogTemp, Error, TEXT("discriminant is less than 0!"));
 		return false;
 	}
 
