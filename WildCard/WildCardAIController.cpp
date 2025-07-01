@@ -22,9 +22,9 @@ void AWildCardAIController::BeginTurn()
 	UE_LOG(LogTemp, Warning, TEXT("Begin turn for %s"), *ControlledCharacter->GetName());
 
 	// Actions can trigger future actions
-	ControlledCharacter->OnActionDone.AddDynamic(this, &AWildCardAIController::Action);
+	ControlledCharacter->OnActionDone.AddDynamic(this, &AWildCardAIController::NextAction);
 	
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AWildCardAIController::Action, 2.0f, false);
+	NextAction();
 }
 
 void AWildCardAIController::BeginPlay()
@@ -91,9 +91,20 @@ void AWildCardAIController::Action()
 	
 	// Pick a skill to cast - just attack, at the moment
 	float DistanceToPlayer = FVector::Dist(PlayerLocation, EnemyLocation);
-	float AttackRange = 300.0f; // Adjust this value as needed
+	float AttackRange = 200.0f; // Adjust this value as needed
 	if (DistanceToPlayer <= AttackRange)
 	{
+		// Calculate direction to player
+		FVector DirectionToPlayer = (PlayerLocation - EnemyLocation).GetSafeNormal();
+    
+		// Create rotation from direction (only use Yaw, keep Pitch and Roll at 0)
+		FRotator LookAtRotation = FRotationMatrix::MakeFromX(DirectionToPlayer).Rotator();
+		LookAtRotation.Pitch = 0.0f;
+		LookAtRotation.Roll = 0.0f;
+    
+		// Set the character's rotation
+		ControlledCharacter->SetActorRotation(LookAtRotation);
+		
 		ControlledCharacter->Attack();
 		ControlledCharacter->Attack();
 		return;
@@ -164,9 +175,9 @@ void AWildCardAIController::Action()
 		ControlledCharacter->LaunchCharacter(JumpDirection * ControlledCharacter->JumpSpeed, false, false);
 		return;
 	}
-
+	
 	UE_LOG(LogTemp, Warning, TEXT("Action - can't directly jump to casting loc, moving!"));
-
+	
 	// Find all points from which jump can reach
 	bool FoundMoveLocation = false;
 	FVector BestMoveLocation = FVector::ZeroVector;
@@ -186,7 +197,7 @@ void AWildCardAIController::Action()
 			}
 		}
 	}
-
+	
 	if (!FoundMoveLocation)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Action - no moving loc found!"));
@@ -205,11 +216,16 @@ void AWildCardAIController::Action()
 	MoveToLocation(BestMoveLocation, -1.0f, false);
 }
 
+void AWildCardAIController::NextAction()
+{
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AWildCardAIController::Action, 1.0f, false);
+}
+
 void AWildCardAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
 	Super::OnMoveCompleted(RequestID, Result);
 	
 	// After movement is complete, mark action as done
 	UE_LOG(LogTemp, Warning, TEXT("OnMoveCompleted called"));
-	Action();
+	NextAction();
 }

@@ -36,6 +36,9 @@ protected:
 	UFUNCTION()
 	void Action();
 
+	UFUNCTION()
+	void NextAction();
+
 	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
 
 	int ActionCounter = 0;
