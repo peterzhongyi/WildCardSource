@@ -51,6 +51,7 @@ void AWildCardAIController::OnPossess(APawn* InPawn)
 
 void AWildCardAIController::Action()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Enemy AI Controller Start Action"));
 	// Increase counter to prevent infinite loops.
 	ActionCounter++;
 	
@@ -74,7 +75,8 @@ void AWildCardAIController::Action()
 		UE_LOG(LogTemp, Error, TEXT("Action - PlayerCharacter is nullptr")); 
 		return;
 	}
-
+	
+	// Get player and enemy location
 	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 	FNavLocation EnemyNavLocation;
 	NavSys->ProjectPointToNavigation(ControlledCharacter->GetActorLocation(),
@@ -166,54 +168,99 @@ void AWildCardAIController::Action()
 		50.0f             // Lifetime in second
 	);
 
-	// Try Jumping towards player
+	// Find Out Stamina Consumption without jumping
+	UE_LOG(LogTemp, Warning, TEXT("EnemyLocation is %s"), *EnemyLocation.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("BestCastLocation is %s"), *BestCastLocation.ToString());
+	double RawPath = 0.0;
+	UNavigationSystemV1::GetPathLength(GetWorld(), EnemyLocation, BestCastLocation, RawPath);
+	if (RawPath < 0.0)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("There is no raw path to BestCastLocation %s"),
+			*BestCastLocation.ToString());
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Raw path length to BestCastLocation %f"), RawPath);
+	float RawPathStaminaCost = static_cast<float>(RawPath) * ControlledCharacter->StaminaPerUnitDistance;
+	UE_LOG(LogTemp, Warning, TEXT("Raw path stamina cost to BestCastLocation %f"), RawPathStaminaCost);
+	
+
+	// Find Out Stamina Consumption if jumping, and where to jump from.
+	float StaminaCostWithJump;
+	FVector BestMoveLocation = FVector::ZeroVector;
 	FRotator OutRotation;
 	if (ControlledCharacter->CalculateProjectileLaunchRotation(EnemyLocation, BestCastLocation,
 			ControlledCharacter->JumpSpeed, ControlledCharacter->CharacterGravity, OutRotation))
 	{
-		FVector JumpDirection = OutRotation.Vector();
-		ControlledCharacter->LaunchCharacter(JumpDirection * ControlledCharacter->JumpSpeed, false, false);
-		return;
+		StaminaCostWithJump = 20.f;
+		BestMoveLocation = EnemyLocation;
+		UE_LOG(LogTemp, Warning, TEXT("StaminaCostWithJump to BestCastLocation %f"), StaminaCostWithJump);
+		
 	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("Action - can't directly jump to casting loc, moving!"));
-	
-	// Find all points from which jump can reach
-	bool FoundMoveLocation = false;
-	FVector BestMoveLocation = FVector::ZeroVector;
-	float BestMoveDistance = FLT_MAX; // The closer to enemy, the better
-	
-	for (const FVector& Point : NavMeshPoints)
+	else
 	{
-		if (ControlledCharacter->CalculateProjectileLaunchRotation(Point, BestCastLocation,
-			ControlledCharacter->JumpSpeed, ControlledCharacter->CharacterGravity, OutRotation))
+		UE_LOG(LogTemp, Warning, TEXT("Action - can't directly jump to casting loc, moving!"));
+		bool FoundMoveLocation = false;
+		float BestMoveDistance = FLT_MAX; // The closer to enemy, the better
+		for (const FVector& Point : NavMeshPoints)
 		{
-			// This is a valid location to jump from
-			if (FVector::Dist(Point, EnemyLocation) < BestMoveDistance)
+			if (ControlledCharacter->CalculateProjectileLaunchRotation(Point, BestCastLocation,
+				ControlledCharacter->JumpSpeed, ControlledCharacter->CharacterGravity, OutRotation))
 			{
-				FoundMoveLocation = true;
-				BestMoveLocation = Point;
-				BestMoveDistance = FVector::Dist(Point, EnemyLocation);
+				// This is a valid location to jump from
+				if (FVector::Dist(Point, EnemyLocation) < BestMoveDistance)
+				{
+					FoundMoveLocation = true;
+					BestMoveLocation = Point;
+					BestMoveDistance = FVector::Dist(Point, EnemyLocation);
+				}
 			}
 		}
-	}
 	
-	if (!FoundMoveLocation)
+		if (!FoundMoveLocation)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Action - no moving loc found!"));
+			return;
+		}
+
+		// Calculate total stamina cost (walk + jump)
+		double PathToMoveLocation = 0.0;
+		UNavigationSystemV1::GetPathLength(GetWorld(), EnemyLocation, BestMoveLocation, PathToMoveLocation);
+		if (RawPath < 0.0)
+		{
+			UE_LOG(LogTemp, Warning,
+				TEXT("There is no raw path to BestMoveLocation %s"),
+				*BestMoveLocation.ToString());
+			return;
+		}
+		UE_LOG(LogTemp, Warning, TEXT("PathToMoveLocation %f"), PathToMoveLocation);
+		float PathToMoveLocationStaminaCost = static_cast<float>(PathToMoveLocation) * ControlledCharacter->StaminaPerUnitDistance;
+		UE_LOG(LogTemp, Warning, TEXT("PathToMoveLocationStaminaCost to BestCastLocation %f"), PathToMoveLocationStaminaCost);
+
+		StaminaCostWithJump = 20.f + PathToMoveLocationStaminaCost;
+		UE_LOG(LogTemp, Warning, TEXT("StaminaCostWithJump to BestCastLocation %f"), StaminaCostWithJump);
+	}
+
+	// Simply move if it doesn't cost too much more stamina, compared to jumping.
+	if (RawPathStaminaCost < StaminaCostWithJump)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Action - no moving loc found!"));
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("Simply Moving to CastLocation"));
+		MoveToLocation(BestCastLocation, -1.0f, false);
 	}
-	
-	// Move towards player
-	UE_LOG(LogTemp, Warning, TEXT("Moving towards move location %s"), *BestMoveLocation.ToString());
-	double PathLength = 0.0;
-	UNavigationSystemV1::GetPathLength(GetWorld(), EnemyLocation, BestMoveLocation, PathLength);
-	
-	if (PathLength > 0.0)
+	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Path length to destination: %f"), PathLength);
+		if (BestMoveLocation == EnemyLocation)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BestMoveLocation is EnemyLocation, Jump!"));
+			FVector JumpDirection = OutRotation.Vector();
+			ControlledCharacter->ActualJump(JumpDirection * ControlledCharacter->JumpSpeed);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Move to location to jump. The actual jumping is handled by next Action."));
+			MoveToLocation(BestMoveLocation, -1.0f, true);
+		}
 	}
-	MoveToLocation(BestMoveLocation, -1.0f, false);
 }
 
 void AWildCardAIController::NextAction()

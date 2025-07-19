@@ -60,7 +60,7 @@ AWildCardCharacter::AWildCardCharacter()
 	// Set up initial character stats
 	MaxStamina = 100.0f;
     Stamina = MaxStamina;
-    StaminaPerUnitDistance = 0.025f; // Adjust this to change stamina consumption rate
+    StaminaPerUnitDistance = 0.05f; // Adjust this to change stamina consumption rate
 	MaxHealth = 100.0f;
 	Health = MaxHealth;
 
@@ -138,13 +138,13 @@ void AWildCardCharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("AIController is null"));
 	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("testing if code is reflected"));
 }
 
 void AWildCardCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
-	
     
 	// Only process stamina and update location if we're on the ground
 	if (GetCharacterMovement()->IsMovingOnGround())
@@ -569,14 +569,18 @@ void AWildCardCharacter::Jump()
 	FRotator ControlRotation = Controller->GetControlRotation();
 	ControlRotation.Pitch = ControlRotation.Pitch * 2.0 + 45.0;
 	FVector LaunchDirection = ControlRotation.Vector();
-	LaunchCharacter(LaunchDirection * JumpSpeed, false, false);
-    
-	float NewStamina = FMath::Max(0.0f, Stamina - 20.0f);
-	UpdateStamina(NewStamina);
+	ActualJump(LaunchDirection * JumpSpeed);
 	
 	bIsPreparingJump = false;
 	ClearTrajectory();
 	SetJumpCamera(false);
+}
+
+void AWildCardCharacter::ActualJump(FVector Velocity)
+{
+	LaunchCharacter(Velocity, false, false);
+	float NewStamina = FMath::Max(0.0f, Stamina - 20.0f);
+	UpdateStamina(NewStamina);
 }
 
 TArray<FVector> AWildCardCharacter::GetUniformNavMeshPoints(float GridSpacing)

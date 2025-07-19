@@ -108,6 +108,8 @@ public:
 	// In public section, modify the existing Jump declaration or add:
 	virtual void Jump() override;
 
+	void ActualJump(FVector Velocity);
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Jump")
 	float JumpSpeed = 1000.0f;
 
