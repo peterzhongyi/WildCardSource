@@ -9,7 +9,7 @@
 
 AWildCardAIController::AWildCardAIController()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AWildCardAIController::BeginTurn()
@@ -30,6 +30,19 @@ void AWildCardAIController::BeginTurn()
 void AWildCardAIController::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void AWildCardAIController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	// UE_LOG(LogTemp, Warning, TEXT("tick"));
+	if (bIsCurrentlyMoving && ControlledCharacter && ControlledCharacter->Stamina <= 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Stopping movement due to stamina depletion"));
+		StopMovement();
+		bIsCurrentlyMoving = false;
+		// Don't call NextAction() here - let OnMoveCompleted handle it
+	}
 }
 
 void AWildCardAIController::OnPossess(APawn* InPawn)
@@ -121,28 +134,28 @@ void AWildCardAIController::Action()
 	float BestCastDistance = FLT_MAX; // The closer to the enemy, the better
 	for (const FVector& Point : NavMeshPoints)
 	{
-		DrawDebugSphere(
-			GetWorld(),
-			Point,
-			10.0f,           // Radius
-			4,              // Segments
-			FColor::Red,     // Color
-			false,           // Persistent lines
-			50.0f             // Lifetime in seconds
-		);
+		// DrawDebugSphere(
+		// 	GetWorld(),
+		// 	Point,
+		// 	10.0f,           // Radius
+		// 	4,              // Segments
+		// 	FColor::Red,     // Color
+		// 	false,           // Persistent lines
+		// 	50.0f             // Lifetime in seconds
+		// );
 		
 		// TODO: add method to validate Point beyond just checking DistanceToPlayer
 		if (FVector::Dist(Point, PlayerLocation) <= AttackRange)
 		{
-			DrawDebugSphere(
-				GetWorld(),
-				Point,
-				10.0f,           // Radius
-				4,              // Segments
-				FColor::Yellow,     // Color
-				false,           // Persistent lines
-				50.0f             // Lifetime in seconds
-			);
+			// DrawDebugSphere(
+			// 	GetWorld(),
+			// 	Point,
+			// 	10.0f,           // Radius
+			// 	4,              // Segments
+			// 	FColor::Yellow,     // Color
+			// 	false,           // Persistent lines
+			// 	50.0f             // Lifetime in seconds
+			// );
 			FoundCastLocation = true;
 			if (FVector::Dist(Point, EnemyLocation) < BestCastDistance)
 			{
@@ -195,7 +208,6 @@ void AWildCardAIController::Action()
 		StaminaCostWithJump = 20.f;
 		BestMoveLocation = EnemyLocation;
 		UE_LOG(LogTemp, Warning, TEXT("StaminaCostWithJump to BestCastLocation %f"), StaminaCostWithJump);
-		
 	}
 	else
 	{
@@ -233,34 +245,40 @@ void AWildCardAIController::Action()
 				*BestMoveLocation.ToString());
 			return;
 		}
+		UE_LOG(LogTemp, Warning, TEXT("BestMoveLocation %s"), *BestMoveLocation.ToString());
 		UE_LOG(LogTemp, Warning, TEXT("PathToMoveLocation %f"), PathToMoveLocation);
 		float PathToMoveLocationStaminaCost = static_cast<float>(PathToMoveLocation) * ControlledCharacter->StaminaPerUnitDistance;
-		UE_LOG(LogTemp, Warning, TEXT("PathToMoveLocationStaminaCost to BestCastLocation %f"), PathToMoveLocationStaminaCost);
+		UE_LOG(LogTemp, Warning, TEXT("PathToMoveLocationStaminaCost %f"), PathToMoveLocationStaminaCost);
 
 		StaminaCostWithJump = 20.f + PathToMoveLocationStaminaCost;
-		UE_LOG(LogTemp, Warning, TEXT("StaminaCostWithJump to BestCastLocation %f"), StaminaCostWithJump);
+		UE_LOG(LogTemp, Warning, TEXT("StaminaCostWithJump %f"), StaminaCostWithJump);
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("Simply Moving to CastLocation"));
+	MoveToLocation(BestCastLocation, -1.0f, false);
+	bIsCurrentlyMoving = true;
 	// Simply move if it doesn't cost too much more stamina, compared to jumping.
-	if (RawPathStaminaCost < StaminaCostWithJump)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Simply Moving to CastLocation"));
-		MoveToLocation(BestCastLocation, -1.0f, false);
-	}
-	else
-	{
-		if (BestMoveLocation == EnemyLocation)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("BestMoveLocation is EnemyLocation, Jump!"));
-			FVector JumpDirection = OutRotation.Vector();
-			ControlledCharacter->ActualJump(JumpDirection * ControlledCharacter->JumpSpeed);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Move to location to jump. The actual jumping is handled by next Action."));
-			MoveToLocation(BestMoveLocation, -1.0f, true);
-		}
-	}
+	// if (RawPathStaminaCost < StaminaCostWithJump)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Simply Moving to CastLocation"));
+	// 	MoveToLocation(BestCastLocation, -1.0f, false);
+	// 	bIsCurrentlyMoving = true;
+	// }
+	// else
+	// {
+	// 	if (BestMoveLocation == EnemyLocation)
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("BestMoveLocation is EnemyLocation, Jump!"));
+	// 		FVector JumpDirection = OutRotation.Vector();
+	// 		ControlledCharacter->ActualJump(JumpDirection * ControlledCharacter->JumpSpeed);
+	// 	}
+	// 	else
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("Move to location to jump. The actual jumping is handled by next Action."));
+	// 		MoveToLocation(BestMoveLocation, -1.0f, false);
+	// 		bIsCurrentlyMoving = true;
+	// 	}
+	// }
 }
 
 void AWildCardAIController::NextAction()

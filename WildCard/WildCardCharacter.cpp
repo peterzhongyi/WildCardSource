@@ -60,7 +60,7 @@ AWildCardCharacter::AWildCardCharacter()
 	// Set up initial character stats
 	MaxStamina = 100.0f;
     Stamina = MaxStamina;
-    StaminaPerUnitDistance = 0.05f; // Adjust this to change stamina consumption rate
+    StaminaPerUnitDistance = 0.5f; // Adjust this to change stamina consumption rate
 	MaxHealth = 100.0f;
 	Health = MaxHealth;
 
