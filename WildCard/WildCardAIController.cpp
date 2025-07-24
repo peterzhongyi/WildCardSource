@@ -253,32 +253,28 @@ void AWildCardAIController::Action()
 		StaminaCostWithJump = 20.f + PathToMoveLocationStaminaCost;
 		UE_LOG(LogTemp, Warning, TEXT("StaminaCostWithJump %f"), StaminaCostWithJump);
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Simply Moving to CastLocation"));
-	MoveToLocation(BestCastLocation, -1.0f, false);
-	bIsCurrentlyMoving = true;
 	// Simply move if it doesn't cost too much more stamina, compared to jumping.
-	// if (RawPathStaminaCost < StaminaCostWithJump)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Simply Moving to CastLocation"));
-	// 	MoveToLocation(BestCastLocation, -1.0f, false);
-	// 	bIsCurrentlyMoving = true;
-	// }
-	// else
-	// {
-	// 	if (BestMoveLocation == EnemyLocation)
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("BestMoveLocation is EnemyLocation, Jump!"));
-	// 		FVector JumpDirection = OutRotation.Vector();
-	// 		ControlledCharacter->ActualJump(JumpDirection * ControlledCharacter->JumpSpeed);
-	// 	}
-	// 	else
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("Move to location to jump. The actual jumping is handled by next Action."));
-	// 		MoveToLocation(BestMoveLocation, -1.0f, false);
-	// 		bIsCurrentlyMoving = true;
-	// 	}
-	// }
+	if (RawPathStaminaCost < StaminaCostWithJump)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Simply Moving to CastLocation"));
+		MoveToLocation(BestCastLocation, -1.0f, false);
+		bIsCurrentlyMoving = true;
+	}
+	else
+	{
+		if (BestMoveLocation == EnemyLocation)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BestMoveLocation is EnemyLocation, Jump!"));
+			FVector JumpDirection = OutRotation.Vector();
+			ControlledCharacter->ActualJump(JumpDirection * ControlledCharacter->JumpSpeed);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Move to location to jump. The actual jumping is handled by next Action."));
+			MoveToLocation(BestMoveLocation, -1.0f, false);
+			bIsCurrentlyMoving = true;
+		}
+	}
 }
 
 void AWildCardAIController::NextAction()

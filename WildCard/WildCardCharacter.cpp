@@ -60,7 +60,7 @@ AWildCardCharacter::AWildCardCharacter()
 	// Set up initial character stats
 	MaxStamina = 100.0f;
     Stamina = MaxStamina;
-    StaminaPerUnitDistance = 0.5f; // Adjust this to change stamina consumption rate
+    StaminaPerUnitDistance = 0.1f; // Adjust this to change stamina consumption rate
 	MaxHealth = 100.0f;
 	Health = MaxHealth;
 
@@ -567,7 +567,7 @@ void AWildCardCharacter::Jump()
 	}
 	
 	FRotator ControlRotation = Controller->GetControlRotation();
-	ControlRotation.Pitch = ControlRotation.Pitch * 2.0 + 45.0;
+	ControlRotation.Pitch = ControlRotation.Pitch * 2.0 + 90.0;
 	FVector LaunchDirection = ControlRotation.Vector();
 	ActualJump(LaunchDirection * JumpSpeed);
 	
@@ -640,7 +640,7 @@ void AWildCardCharacter::CalculateJumpTrajectory()
 	FVector StartLocation = ActorLocation - FVector(0, 0, CapsuleHalfHeight * 0.99);  // Bottom of capsule (feet level)
 	
 	FRotator ControlRotation = Controller->GetControlRotation();
-	ControlRotation.Pitch = ControlRotation.Pitch * 2.0 + 45.0;
+	ControlRotation.Pitch = ControlRotation.Pitch * 2.0 + 90.0;
 	FVector LaunchDirection = ControlRotation.Vector();
 	
 	FVector LaunchVelocity = LaunchDirection * JumpSpeed;
