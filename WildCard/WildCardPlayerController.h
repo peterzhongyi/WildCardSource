@@ -49,6 +49,9 @@ public:
 	class UInputAction* AttackAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* GroundSlamAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CancelAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -66,6 +69,7 @@ public:
 	void HandleSwitchTurn();
 	void HandleCast();
 	void HandleAttack();
+	void HandleGroundSlam();
 	void HandleCancel();
 	void HandleSummon();
 

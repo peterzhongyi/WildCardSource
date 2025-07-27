@@ -96,6 +96,7 @@ public:
 
 	void FireBall();
 	void Attack();
+	void GroundSlam();
 	void Hit();
 	void Cancel();
 	void Summon();
@@ -149,6 +150,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> AttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> GroundSlamMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> HitMontage;

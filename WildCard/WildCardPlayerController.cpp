@@ -55,6 +55,12 @@ AWildCardPlayerController::AWildCardPlayerController()
         UE_LOG(LogTemp, Error, TEXT("Can't find IA_Attack")); 
     }
 
+    GroundSlamAction = LoadObject<UInputAction>(nullptr, TEXT("/game/ThirdPerson/Input/Actions/IA_GroundSlam")); 
+    if (!GroundSlamAction)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Can't find IA_GroundSlam"));
+    }
+
     CancelAction = LoadObject<UInputAction>(nullptr, TEXT("/game/ThirdPerson/Input/Actions/IA_Cancel")); 
     if (!CancelAction)
     {
@@ -101,6 +107,7 @@ void AWildCardPlayerController::SetupInputComponent()
         EnhancedInputComponent->BindAction(SwitchTurnAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleSwitchTurn);
         EnhancedInputComponent->BindAction(CastAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleCast);
         EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleAttack);
+        EnhancedInputComponent->BindAction(GroundSlamAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleGroundSlam);
         EnhancedInputComponent->BindAction(CancelAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleCancel);
         EnhancedInputComponent->BindAction(SummonAction, ETriggerEvent::Completed, this, &AWildCardPlayerController::HandleSummon);
     }
@@ -159,6 +166,11 @@ void AWildCardPlayerController::HandleCast()
 void AWildCardPlayerController::HandleAttack()
 {
     WildCardCharacter->Attack();
+}
+
+void AWildCardPlayerController::HandleGroundSlam()
+{
+    WildCardCharacter->GroundSlam();
 }
 
 void AWildCardPlayerController::HandleCancel()

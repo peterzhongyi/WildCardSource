@@ -403,6 +403,14 @@ void AWildCardCharacter::Attack()
 	bIsPreparingAttack = false;
 }
 
+void AWildCardCharacter::GroundSlam()
+{
+	if (GroundSlamMontage && GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(GroundSlamMontage);
+	}
+}
+
 // Since OnSwordOverlap is triggered by begin overlap, there's no need to de-dupe collision events.
 void AWildCardCharacter::OnSwordOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
